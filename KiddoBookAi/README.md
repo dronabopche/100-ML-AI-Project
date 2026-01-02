@@ -10,7 +10,7 @@
 
 **Transform Topics into Professional Books with AI**
 
-[Live Demo](#live-demo) • [Features](#-features) • [Installation](#-installation) • [Architecture](#-architecture) • [Usage](#-usage)
+[Live Demo](https://kiddobookai.streamlit.app) • [Features](#-features) • [Installation](#-installation) • [Architecture](#-architecture) • [Usage](#-usage)
 
 </div>
 
