@@ -6,16 +6,16 @@ from reportlab.pdfgen import canvas
 import base64
 from io import BytesIO
 
-# ==================================================
-# CONFIGURATION
-# ==================================================
-API_KEY = "AIzaSyCcAjw01pUOUbY7peiya0esEUVvxkvx12A"   # ⚠️ Replace securely
+
+# CONFIGURATION (api key section)
+#==================================================
+API_KEY = "AIzaSyCcAjw01pUOUbY7peiya0esEUVvxkvx12A"   
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel("gemini-2.5-flash")
 
-# ==================================================
-# TOPIC NORMALIZATION
-# ==================================================
+
+#Topic Processing Engine 
+#==================================================
 def clean_topics(raw_text: str) -> list[str]:
     topics = []
     lines = raw_text.split("\n")
@@ -28,8 +28,8 @@ def clean_topics(raw_text: str) -> list[str]:
                 topics.append(topic)
     return topics
 
-# ==================================================
-# LLM INTERACTION
+
+# LLM interation Layer
 # ==================================================
 def explain_topic(topic: str, book_type: str, book_name: str = "", book_description: str = "") -> str:
     """Generate content based on book type"""
@@ -76,8 +76,8 @@ Make it practical and educational."""
     except Exception as e:
         return f"[Error generating content: {str(e)}]"
 
-# ==================================================
-# PDF GENERATION (WITHOUT LOGO)
+
+#Content Generator (PDF export and Text Export)
 # ==================================================
 def generate_pdf(book_text: str, book_name: str = "Book", book_type: str = "Textbook", filename: str = "KiddoBookAI.pdf") -> None:
     c = canvas.Canvas(filename, pagesize=A4)
@@ -116,16 +116,16 @@ def generate_pdf(book_text: str, book_name: str = "Book", book_type: str = "Text
 
     c.save()
 
-# ==================================================
-# STREAMLIT UI (WITHOUT LOGO)
-# ==================================================
+
+#StreamLit UI layer
+#==================================================
 st.set_page_config(
     page_title="KiddoBookAI",
     page_icon="📘",
     layout="wide"
 )
 
-# Clean CSS without logo styling
+#clean CSS without logo styling
 st.markdown("""
 <style>
     /* Main container */
@@ -298,9 +298,9 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ==================================================
-# APP HEADER (WITHOUT LOGO)
-# ==================================================
+
+#APP HEADER
+
 st.markdown("""
 <div class="main-container">
     <div class="app-header">
@@ -310,9 +310,8 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ==================================================
-# INITIALIZE SESSION STATE
-# ==================================================
+#INITIALIZE SESSION STATE
+
 if 'generated' not in st.session_state:
     st.session_state.generated = False
 if 'book_content' not in st.session_state:
@@ -328,9 +327,8 @@ if 'book_description' not in st.session_state:
 if 'raw_input' not in st.session_state:
     st.session_state.raw_input = ""
 
-# ==================================================
-# MAIN CONTENT
-# ==================================================
+
+#mAIN CONTENT
 col1, col2 = st.columns([2, 1], gap="large")
 
 with col1:
@@ -416,18 +414,15 @@ with col2:
     - All books include KiddoBookAI branding
     """)
 
-# ==================================================
-# UPDATE SESSION STATE WITH CURRENT VALUES
-# ==================================================
+
+#UPDATE SESSION STATE WITH CURRENT VALUES
+
 if 'generating' not in st.session_state or not st.session_state.generating:
     st.session_state.book_name = book_name
     st.session_state.book_description = book_description
     st.session_state.book_type = book_type
     st.session_state.raw_input = raw_input
 
-# ==================================================
-# HANDLE BUTTON ACTIONS
-# ==================================================
 
 # Handle Reset
 if reset_clicked:
@@ -462,9 +457,9 @@ if generate_clicked:
     
     st.rerun()
 
-# ==================================================
-# GENERATION PROCESS
-# ==================================================
+
+#GENERATION PROCESS () AI Orchestrator )
+#==================================================
 if 'generating' in st.session_state and st.session_state.generating:
     topics = st.session_state.topics
     book_name = st.session_state.book_name
@@ -513,9 +508,9 @@ if 'generating' in st.session_state and st.session_state.generating:
     
     st.rerun()
 
-# ==================================================
-# DOWNLOAD SECTION (After Generation)
-# ==================================================
+
+#DOWNLOAD SECTION (After Generation)
+#==================================================
 if 'generated' in st.session_state and st.session_state.generated:
     st.markdown("""
     <div class="success-box">
@@ -576,7 +571,7 @@ if 'generated' in st.session_state and st.session_state.generated:
     with col4:
         st.metric("📄 Format", "PDF/TXT")
 
-# ==================================================
+
 # FOOTER WITH KIDDOBOOKAI BRANDING
 # ==================================================
 st.markdown("---")
