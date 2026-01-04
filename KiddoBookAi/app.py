@@ -1,21 +1,36 @@
+import os
 import re
 import streamlit as st
 import google.generativeai as genai
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
+from reportlab.lib.utils import ImageReader
 import base64
+import requests
 from io import BytesIO
+from PIL import Image
+import json
+import time
 
+# CONFIGURATION
+# ==================================================
 
-# CONFIGURATION (api key section)
-#==================================================
-API_KEY = "AIzaSyCcAjw01pUOUbY7peiya0esEUVvxkvx12A"   
-genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel("gemini-2.5-flash")
+# Try to get API keys from environment variables
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+HF_TOKEN = os.getenv("HF_TOKEN")
 
+# Configure Google Gemini
+if GOOGLE_API_KEY:
+    genai.configure(api_key=GOOGLE_API_KEY)
+    model = genai.GenerativeModel("gemini-1.5-flash")
+else:
+    st.warning("Google API key not found. Please set GOOGLE_API_KEY environment variable.")
 
-#Topic Processing Engine 
-#==================================================
+# Hugging Face Configuration
+HF_FLUX_API_URL = "https://router.huggingface.co/replicate/v1/models/black-forest-labs/flux-2-dev/predictions"
+
+# Topic Processing Engine 
+# ==================================================
 def clean_topics(raw_text: str) -> list[str]:
     topics = []
     lines = raw_text.split("\n")
@@ -28,8 +43,133 @@ def clean_topics(raw_text: str) -> list[str]:
                 topics.append(topic)
     return topics
 
+# Hugging Face Image Generation Function
+# ==================================================
+def generate_book_cover_hf(book_name: str, book_type: str, book_description: str = ""):
+    """Generate book cover using Hugging Face FLUX model"""
+    
+    if not HF_TOKEN:
+        st.error("Hugging Face token not configured. Please set HF_TOKEN environment variable.")
+        return None
+    
+    try:
+        # Create a prompt for the cover
+        prompt = f"Professional book cover design for '{book_name}', {book_type.lower()} style"
+        if book_description:
+            prompt += f", theme: {book_description[:50]}"
+        
+        prompt += ", clean design, minimalist, high quality, 4k, trending on artstation"
+        
+        headers = {
+            "Authorization": f"Bearer {HF_TOKEN}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "input": {
+                "prompt": prompt,
+                "num_outputs": 1,
+                "aspect_ratio": "1:1",  # Square format for book cover
+                "guidance_scale": 7.5,
+                "num_inference_steps": 28
+            }
+        }
+        
+        # Make the API request
+        response = requests.post(HF_FLUX_API_URL, headers=headers, json=payload)
+        
+        if response.status_code == 200:
+            response_data = response.json()
+            
+            # Check if prediction URL is available
+            if 'urls' in response_data and 'get' in response_data['urls']:
+                # Poll for result (Hugging Face async API)
+                prediction_url = response_data['urls']['get']
+                
+                # Wait for prediction to complete
+                for _ in range(30):  # Try for 30 seconds
+                    prediction_response = requests.get(prediction_url, headers=headers)
+                    prediction_data = prediction_response.json()
+                    
+                    if prediction_data['status'] == 'succeeded':
+                        # Get the image URL from the output
+                        if 'output' in prediction_data:
+                            image_url = prediction_data['output'][0] if isinstance(prediction_data['output'], list) else prediction_data['output']
+                            
+                            # Download the image
+                            image_response = requests.get(image_url)
+                            if image_response.status_code == 200:
+                                # Save the image
+                                image_path = f"cover_{book_name.replace(' ', '_')[:30]}.png"
+                                with open(image_path, "wb") as f:
+                                    f.write(image_response.content)
+                                return image_path
+                    
+                    elif prediction_data['status'] == 'failed':
+                        st.error(f"Image generation failed: {prediction_data.get('error', 'Unknown error')}")
+                        return None
+                    
+                    time.sleep(2)  # Wait 2 seconds before polling again
+                
+                st.warning("Image generation timed out. Please try again.")
+                return None
+            else:
+                st.error("Invalid response from Hugging Face API")
+                return None
+                
+        else:
+            st.error(f"Hugging Face API Error: {response.status_code} - {response.text}")
+            return None
+            
+    except Exception as e:
+        st.error(f"Error generating cover: {str(e)}")
+        return None
 
-# LLM interation Layer
+# Alternative simpler Hugging Face API (using Inference API)
+def generate_book_cover_simple(book_name: str, book_type: str, book_description: str = ""):
+    """Simpler alternative using Hugging Face Inference API"""
+    
+    if not HF_TOKEN:
+        return None
+    
+    try:
+        # Create prompt
+        prompt = f"Book cover for '{book_name}', {book_type.lower()} style, professional design"
+        if book_description:
+            prompt += f", theme: {book_description[:50]}"
+        
+        # Use a different Hugging Face endpoint that's more straightforward
+        API_URL = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
+        headers = {"Authorization": f"Bearer {HF_TOKEN}"}
+        
+        payload = {
+            "inputs": prompt,
+            "parameters": {
+                "negative_prompt": "ugly, blurry, text, watermark, signature",
+                "num_inference_steps": 30,
+                "guidance_scale": 7.5,
+                "height": 512,
+                "width": 512
+            }
+        }
+        
+        response = requests.post(API_URL, headers=headers, json=payload)
+        
+        if response.status_code == 200:
+            # Save the image
+            image_path = f"cover_{book_name.replace(' ', '_')[:30]}.png"
+            with open(image_path, "wb") as f:
+                f.write(response.content)
+            return image_path
+        else:
+            st.error(f"Hugging Face Error: {response.status_code}")
+            return None
+            
+    except Exception as e:
+        st.error(f"Error: {str(e)}")
+        return None
+
+# LLM Interaction Layer (Google Gemini)
 # ==================================================
 def explain_topic(topic: str, book_type: str, book_name: str = "", book_description: str = "") -> str:
     """Generate content based on book type"""
@@ -76,20 +216,60 @@ Make it practical and educational."""
     except Exception as e:
         return f"[Error generating content: {str(e)}]"
 
-
-#Content Generator (PDF export and Text Export)
+# Content Generator with Cover Image Support
 # ==================================================
-def generate_pdf(book_text: str, book_name: str = "Book", book_type: str = "Textbook", filename: str = "KiddoBookAI.pdf") -> None:
+def generate_pdf(book_text: str, book_name: str = "Book", book_type: str = "Textbook", 
+                 cover_image_path: str = None, filename: str = "kiddoBookAi.pdf") -> None:
+    
     c = canvas.Canvas(filename, pagesize=A4)
     width, height = A4
 
     margin_x, margin_y = 50, 50
     line_height = 14
-
-    # Header (without logo)
+    
+    # COVER PAGE (if image exists)
+    if cover_image_path and os.path.exists(cover_image_path):
+        try:
+            # Create a cover page
+            c.setFont("Helvetica-Bold", 24)
+            c.setFillColorRGB(0.1, 0.1, 0.5)  # Dark blue
+            c.drawString(margin_x, height - 150, book_name)
+            
+            c.setFont("Helvetica", 14)
+            c.setFillColorRGB(0.3, 0.3, 0.3)
+            c.drawString(margin_x, height - 200, f"A {book_type}")
+            
+            # Add the generated cover image
+            img = ImageReader(cover_image_path)
+            img_width, img_height = img.getSize()
+            
+            # Scale image to fit
+            scale = min((width-100)/img_width, (height-300)/img_height)
+            scaled_width = img_width * scale
+            scaled_height = img_height * scale
+            
+            # Position image
+            img_x = (width - scaled_width) / 2
+            img_y = (height - scaled_height) / 2 - 50
+            
+            c.drawImage(cover_image_path, img_x, img_y, 
+                       width=scaled_width, height=scaled_height)
+            
+            # Footer on cover
+            c.setFont("Helvetica-Oblique", 10)
+            c.setFillColorRGB(0.5, 0.5, 0.5)
+            c.drawString(margin_x, 50, "Generated with kiddoBookAi")
+            
+            c.showPage()  # Move to next page for content
+            
+        except Exception as e:
+            st.warning(f"Could not add cover image: {str(e)}")
+    
+    # BOOK CONTENT PAGE
+    # Header
     c.setFont("Helvetica-Bold", 18)
     c.setFillColor("#1E3A8A")
-    c.drawString(margin_x, height - margin_y, f"KiddoBookAI Presents:")
+    c.drawString(margin_x, height - margin_y, f"kiddoBookAi Presents:")
     
     c.setFont("Helvetica-Bold", 16)
     c.setFillColor("#1E40AF")
@@ -98,7 +278,7 @@ def generate_pdf(book_text: str, book_name: str = "Book", book_type: str = "Text
     c.setFont("Helvetica", 10)
     c.setFillColor("#4B5563")
     c.drawString(margin_x, height - margin_y - 45, f"Book Type: {book_type}")
-    c.drawString(margin_x, height - margin_y - 60, "Generated with KiddoBookAI - AI Book Generator")
+    c.drawString(margin_x, height - margin_y - 60, "Generated with kiddoBookAi")
     
     # Content
     y = height - margin_y - 80
@@ -116,337 +296,137 @@ def generate_pdf(book_text: str, book_name: str = "Book", book_type: str = "Text
 
     c.save()
 
-
-#StreamLit UI layer
-#==================================================
+# Streamlit UI
+# ==================================================
 st.set_page_config(
-    page_title="KiddoBookAI",
-    page_icon="📘",
+    page_title="kiddoBookAi",
+    page_icon="📚",
     layout="wide"
 )
 
-#clean CSS without logo styling
-st.markdown("""
-<style>
-    /* Main container */
-    .main-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-    
-    /* Header */
-    .app-header {
-        text-align: center;
-        padding: 1.5rem 0;
-        margin-bottom: 1.5rem;
-        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-        border-radius: 16px;
-        border: 1px solid #bae6fd;
-    }
-    
-    .app-title {
-        font-size: 2.5rem;
-        font-weight: 800;
-        background: linear-gradient(90deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin: 0;
-        text-shadow: 0 2px 4px rgba(30, 64, 175, 0.1);
-    }
-    
-    .app-subtitle {
-        font-size: 1rem;
-        color: #4b5563;
-        margin-top: 0.5rem;
-        max-width: 600px;
-        line-height: 1.5;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    
-    /* Input styling */
-    .stTextInput input, .stTextArea textarea {
-        border: 1px solid #d1d5db !important;
-        border-radius: 10px !important;
-        padding: 12px !important;
-        font-size: 14px !important;
-        background: #f9fafb !important;
-    }
-    
-    .stTextInput input:focus, .stTextArea textarea:focus {
-        border-color: #3b82f6 !important;
-        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
-        background: white !important;
-        outline: none !important;
-    }
-    
-    /* Button styling */
-    .stButton > button {
-        background: linear-gradient(90deg, #1e40af 0%, #3b82f6 100%) !important;
-        color: white !important;
-        border: none !important;
-        border-radius: 10px !important;
-        padding: 14px 28px !important;
-        font-weight: 600 !important;
-        font-size: 16px !important;
-        transition: all 0.3s ease !important;
-        width: 100% !important;
-        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.2) !important;
-    }
-    
-    .stButton > button:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3) !important;
-    }
-    
-    .reset-btn {
-        background: linear-gradient(90deg, #6b7280 0%, #9ca3af 100%) !important;
-        box-shadow: 0 4px 12px rgba(107, 114, 128, 0.2) !important;
-    }
-    
-    .reset-btn:hover {
-        box-shadow: 0 8px 24px rgba(107, 114, 128, 0.3) !important;
-    }
-    
-    /* Topic badges */
-    .topic-badge {
-        display: inline-block;
-        background: linear-gradient(90deg, #dbeafe 0%, #bfdbfe 100%);
-        color: #1e40af;
-        padding: 8px 16px;
-        border-radius: 20px;
-        margin: 4px;
-        font-size: 14px;
-        font-weight: 500;
-        border: 2px solid #93c5fd;
-        box-shadow: 0 2px 6px rgba(147, 197, 253, 0.2);
-    }
-    
-    /* Chapter content */
-    .chapter-box {
-        background: #f8fafc;
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        border-left: 5px solid #3b82f6;
-        border: 1px solid #e5e7eb;
-        font-size: 14px;
-        line-height: 1.6;
-    }
-    
-    /* Progress bar */
-    .stProgress > div > div > div > div {
-        background: linear-gradient(90deg, #1e40af 0%, #3b82f6 100%);
-        border-radius: 10px;
-        height: 10px !important;
-    }
-    
-    /* Success message */
-    .success-box {
-        background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-        color: white;
-        padding: 1.5rem;
-        border-radius: 12px;
-        margin: 1.5rem 0;
-        border: none;
-        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
-    }
-    
-    /* Download section */
-    .download-box {
-        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-        padding: 1.5rem;
-        border-radius: 12px;
-        margin: 1.5rem 0;
-        border: 2px solid #fbbf24;
-        box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
-    }
-    
-    /* Hide Streamlit elements */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    .stDeployButton {display: none;}
-    
-    /* Custom select box */
-    .stSelectbox > div > div {
-        background: #f9fafb !important;
-        border: 1px solid #d1d5db !important;
-        border-radius: 10px !important;
-        padding: 8px !important;
-    }
-    
-    .stSelectbox select {
-        font-size: 14px !important;
-        color: #374151 !important;
-    }
-    
-    /* Metrics styling */
-    .stMetric {
-        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-        border-radius: 12px;
-        padding: 1rem;
-        border: 1px solid #bae6fd;
-    }
-    
-    /* Columns spacing */
-    .stColumn {
-        padding: 0 10px;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-
-#APP HEADER
-
-st.markdown("""
-<div class="main-container">
-    <div class="app-header">
-        <h1 class="app-title">📘 KiddoBookAI</h1>
-        <p class="app-subtitle">Create professional, AI-generated educational books from your topics</p>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-#INITIALIZE SESSION STATE
-
+# Initialize session state
+if 'theme' not in st.session_state:
+    st.session_state.theme = "System Default"
 if 'generated' not in st.session_state:
     st.session_state.generated = False
 if 'book_content' not in st.session_state:
     st.session_state.book_content = ""
 if 'pdf_filename' not in st.session_state:
     st.session_state.pdf_filename = ""
-if 'book_type' not in st.session_state:
-    st.session_state.book_type = "Textbook"
-if 'book_name' not in st.session_state:
-    st.session_state.book_name = ""
-if 'book_description' not in st.session_state:
-    st.session_state.book_description = ""
-if 'raw_input' not in st.session_state:
-    st.session_state.raw_input = ""
+if 'cover_image_path' not in st.session_state:
+    st.session_state.cover_image_path = None
+for key in ['book_name', 'book_type', 'book_description', 'raw_input']:
+    if key not in st.session_state:
+        st.session_state[key] = ""
 
+# Check API availability
+api_status = {
+    "Google Gemini": GOOGLE_API_KEY is not None,
+    "Hugging Face": HF_TOKEN is not None
+}
 
-#mAIN CONTENT
-col1, col2 = st.columns([2, 1], gap="large")
+# App Header
+st.title("📚 kiddoBookAi")
+st.markdown("Create educational books with AI-generated covers")
+
+# API Status Indicator
+status_cols = st.columns(len(api_status))
+for idx, (service, status) in enumerate(api_status.items()):
+    with status_cols[idx]:
+        if status:
+            st.success(f"✅ {service}")
+        else:
+            st.warning(f"⚠️ {service}")
+
+# Main Input Section
+col1, col2 = st.columns(2)
 
 with col1:
-    # Book Details
-    st.markdown("### 📖 Book Details")
-    
+    st.subheader("Book Details")
     book_name = st.text_input(
-        "Book Title",
+        "Book Title *",
         value=st.session_state.book_name,
         placeholder="e.g., The Complete Guide to Machine Learning",
-        help="Enter a title for your book",
-        key="book_name_input"
+        help="Enter a title for your book"
     )
     
     book_description = st.text_area(
         "Description (Optional)",
         value=st.session_state.book_description,
         height=100,
-        placeholder="Describe what this book is about, who it's for, and what readers will learn...",
-        help="Helps AI understand context better",
-        key="book_description_input"
+        placeholder="Describe what this book is about... This helps generate a better cover image."
     )
     
-    # Book Type
-    st.markdown("### 🎯 Book Style")
     book_type = st.selectbox(
-        "Select the type of book you want to create:",
+        "Book Style *",
         ["Textbook", "Exam-prep Notes", "Story-style Guide", "Research Manual", "Beginner's Handbook"],
-        index=["Textbook", "Exam-prep Notes", "Story-style Guide", "Research Manual", "Beginner's Handbook"].index(
-            st.session_state.book_type
-        ) if st.session_state.book_type in ["Textbook", "Exam-prep Notes", "Story-style Guide", "Research Manual", "Beginner's Handbook"] else 0,
-        help="Choose the style that best fits your needs",
-        key="book_type_select"
+        index=0
     )
     
-    # Topics Input
-    st.markdown("### 📝 Enter Topics")
-    raw_input = st.text_area(
-        "Enter your topics (one per line or comma separated):",
-        value=st.session_state.raw_input,
-        height=150,
-        placeholder="Example formats:\n• Machine Learning\n• Neural Networks\n• Deep Learning\n\nOr:\nPython Programming, Data Science, Web Development",
-        help="List all topics you want in your book",
-        key="raw_input_textarea"
+    # Cover generation option
+    generate_cover = st.checkbox(
+        "🎨 Generate AI cover image with Hugging Face",
+        value=HF_TOKEN is not None,
+        disabled=HF_TOKEN is None,
+        help="Requires Hugging Face API token"
     )
 
 with col2:
-    # Action Buttons
-    st.markdown("### ⚡ Actions")
-    
-    # Generate Button
-    generate_clicked = st.button(
-        "🚀 Generate Book",
-        type="primary",
-        use_container_width=True,
-        key="generate_btn",
-        help="Click to generate your book"
+    st.subheader("Topics")
+    raw_input = st.text_area(
+        "Enter your topics (one per line or comma separated): *",
+        value=st.session_state.raw_input,
+        height=200,
+        placeholder="Example:\nMachine Learning\nArtificial Intelligence\nNeural Networks\n\nOr: Python, Data Science, Web Development"
     )
     
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # Reset Button
-    reset_clicked = st.button(
-        "🔄 Reset All",
-        type="secondary",
-        use_container_width=True,
-        key="reset_btn",
-        help="Clear all inputs"
-    )
-    
-    st.markdown("---")
-    
-    # About Section
-    st.markdown("""
-    ### 📚 About KiddoBookAI
-    
-    Create professional AI-generated books with branding.
-    
-    **Features:**
-    - Multiple book styles
-    - PDF export with clean formatting
-    - User-friendly interface
-    - All books include KiddoBookAI branding
-    """)
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        generate_clicked = st.button(
+            "🚀 Generate Book",
+            type="primary",
+            use_container_width=True,
+            disabled=not GOOGLE_API_KEY or not book_name or not raw_input.strip()
+        )
+    with col_btn2:
+        reset_clicked = st.button(
+            "🧹 Reset",
+            type="secondary",
+            use_container_width=True
+        )
 
-
-#UPDATE SESSION STATE WITH CURRENT VALUES
-
-if 'generating' not in st.session_state or not st.session_state.generating:
-    st.session_state.book_name = book_name
-    st.session_state.book_description = book_description
-    st.session_state.book_type = book_type
-    st.session_state.raw_input = raw_input
-
+# Update Session State
+st.session_state.book_name = book_name
+st.session_state.book_description = book_description
+st.session_state.book_type = book_type
+st.session_state.raw_input = raw_input
 
 # Handle Reset
 if reset_clicked:
-    keys_to_reset = ['generated', 'book_content', 'pdf_filename', 'generating', 'topics']
-    for key in keys_to_reset:
+    for key in ['generated', 'book_content', 'pdf_filename', 'generating', 'topics', 'cover_image_path']:
         if key in st.session_state:
             del st.session_state[key]
-    
-    st.session_state.book_name = ""
-    st.session_state.book_description = ""
-    st.session_state.book_type = "Textbook"
-    st.session_state.raw_input = ""
-    
+    for key in ['book_name', 'book_type', 'book_description', 'raw_input']:
+        st.session_state[key] = ""
     st.rerun()
 
 # Handle Generate
 if generate_clicked:
+    if not GOOGLE_API_KEY:
+        st.error("Google API key not configured. Please set GOOGLE_API_KEY environment variable.")
+        st.stop()
+    
+    if not book_name.strip():
+        st.error("Please enter a book title")
+        st.stop()
+    
     if not raw_input.strip():
-        st.error("❌ Please enter at least one topic")
+        st.error("Please enter at least one topic")
         st.stop()
     
     topics = clean_topics(raw_input)
     if not topics:
-        st.error("❌ No valid topics found. Please check your input.")
+        st.error("No valid topics found. Please check your input.")
         st.stop()
     
     st.session_state.generating = True
@@ -455,29 +435,35 @@ if generate_clicked:
     st.session_state.book_type = book_type
     st.session_state.book_description = book_description
     
+    # Generate cover image if requested
+    cover_path = None
+    if generate_cover and HF_TOKEN:
+        with st.spinner("🎨 Generating cover image with Hugging Face..."):
+            cover_path = generate_book_cover_simple(book_name, book_type, book_description)
+            if cover_path:
+                st.session_state.cover_image_path = cover_path
+                st.success("Cover image generated successfully!")
+            else:
+                st.warning("Could not generate cover image. Proceeding without cover.")
+    
     st.rerun()
 
-
-#GENERATION PROCESS () AI Orchestrator )
-#==================================================
+# Generation Process
 if 'generating' in st.session_state and st.session_state.generating:
     topics = st.session_state.topics
     book_name = st.session_state.book_name
     book_type = st.session_state.book_type
     book_description = st.session_state.book_description
+    cover_path = st.session_state.get('cover_image_path')
     
-    # Show topics
-    st.markdown("### ✅ Topics to Include")
-    st.markdown("<div style='margin: 1rem 0;'>", unsafe_allow_html=True)
+    if cover_path and os.path.exists(cover_path):
+        st.image(cover_path, caption="Generated Book Cover", width=300)
     
-    cols = st.columns(4)
-    for idx, topic in enumerate(topics):
-        with cols[idx % 4]:
-            st.markdown(f'<div class="topic-badge">📚 {topic[:20]}{"..." if len(topic) > 20 else ""}</div>', unsafe_allow_html=True)
+    st.subheader("Selected Topics")
+    for topic in topics:
+        st.markdown(f"- {topic}")
     
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    st.markdown(f"### 📖 Generating Your {book_type}")
+    st.subheader(f"Generating Your {book_type}")
     
     progress_bar = st.progress(0)
     status_text = st.empty()
@@ -485,104 +471,112 @@ if 'generating' in st.session_state and st.session_state.generating:
     book_content = f"{book_name}\n{'='*50}\nBook Type: {book_type}\n"
     if book_description:
         book_content += f"Description: {book_description}\n"
-    book_content += f"Generated with KiddoBookAI\n{'='*50}\n\n"
+    book_content += f"Generated with kiddoBookAi\n{'='*50}\n\n"
     
     for idx, topic in enumerate(topics, 1):
-        status_text.text(f"📝 Generating Chapter {idx}/{len(topics)}: {topic}")
+        status_text.text(f"Generating Chapter {idx}/{len(topics)}: {topic}")
         
-        with st.expander(f"**Chapter {idx}: {topic}**", expanded=(idx == 1)):
+        with st.expander(f"Chapter {idx}: {topic}"):
             explanation = explain_topic(topic, book_type, book_name, book_description)
-            st.markdown(f'<div class="chapter-box">{explanation}</div>', unsafe_allow_html=True)
+            st.write(explanation)
             
             book_content += f"\n\n{'='*40}\nChapter {idx}: {topic}\n{'='*40}\n{explanation}\n"
         
         progress_bar.progress(idx / len(topics))
     
-    pdf_filename = f"KiddoBookAI_{book_name.replace(' ', '_')[:50]}.pdf"
-    generate_pdf(book_content, book_name, book_type, pdf_filename)
+    pdf_filename = f"kiddoBookAi_{book_name.replace(' ', '_')[:50]}.pdf"
+    generate_pdf(book_content, book_name, book_type, cover_path, pdf_filename)
     
     st.session_state.generated = True
     st.session_state.generating = False
     st.session_state.book_content = book_content
     st.session_state.pdf_filename = pdf_filename
     
+    st.balloons()
+    st.success("✅ Book Generated Successfully!")
     st.rerun()
 
-
-#DOWNLOAD SECTION (After Generation)
-#==================================================
+# Download Section
 if 'generated' in st.session_state and st.session_state.generated:
-    st.markdown("""
-    <div class="success-box">
-        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
-            <div style="font-size: 2rem;">🎉</div>
-            <div>
-                <h3 style='color: white; margin: 0;'>Book Generated Successfully!</h3>
-                <p style='color: #d1fae5; margin: 5px 0 0 0; font-size: 0.9rem;'>
-                Your book is ready with KiddoBookAI branding
-                </p>
-            </div>
-        </div>
-        <p style='color: white; margin: 10px 0 0 0; font-size: 0.95rem;'>
-        Your book <b>"{st.session_state.book_name}"</b> has been created with {len(st.session_state.topics) if 'topics' in st.session_state else 0} chapters.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("---")
+    st.subheader("📥 Download Your Book")
     
-    st.markdown('<div class="download-box">', unsafe_allow_html=True)
-    st.markdown("### 📥 Download Your Book")
+    if st.session_state.get('cover_image_path') and os.path.exists(st.session_state.cover_image_path):
+        col_cover, col_info = st.columns([1, 2])
+        with col_cover:
+            st.image(st.session_state.cover_image_path, caption="AI-Generated Cover", width=200)
+        with col_info:
+            st.info(f"**Book:** {st.session_state.book_name}")
+            st.info(f"**Style:** {st.session_state.book_type}")
+            st.info(f"**AI Services:** Gemini (text) + Hugging Face (cover)")
     
-    col1, col2 = st.columns(2)
+    col_d1, col_d2 = st.columns(2)
     
-    with col1:
-        with open(st.session_state.pdf_filename, "rb") as pdf_file:
-            pdf_bytes = pdf_file.read()
-            st.download_button(
-                label="📄 Download PDF",
-                data=pdf_bytes,
-                file_name=st.session_state.pdf_filename,
-                mime="application/pdf",
-                use_container_width=True,
-                key="download_pdf",
-                help="Includes KiddoBookAI branding"
-            )
+    with col_d1:
+        if os.path.exists(st.session_state.pdf_filename):
+            with open(st.session_state.pdf_filename, "rb") as pdf_file:
+                pdf_bytes = pdf_file.read()
+                st.download_button(
+                    label="📥 Download PDF with Cover",
+                    data=pdf_bytes,
+                    file_name=st.session_state.pdf_filename,
+                    mime="application/pdf",
+                    use_container_width=True
+                )
     
-    with col2:
+    with col_d2:
         st.download_button(
-            label="📝 Download Text Version",
+            label="📝 Download Text Only",
             data=st.session_state.book_content,
             file_name=st.session_state.pdf_filename.replace('.pdf', '.txt'),
             mime="text/plain",
-            use_container_width=True,
-            key="download_text",
-            help="Plain text format without formatting"
+            use_container_width=True
         )
-    st.markdown('</div>', unsafe_allow_html=True)
     
-    st.markdown("### 📊 Book Statistics")
-    col1, col2, col3, col4 = st.columns(4)
+    # Stats
+    st.subheader("Book Statistics")
+    col_s1, col_s2, col_s3, col_s4 = st.columns(4)
+    with col_s1:
+        st.metric("Chapters", len(st.session_state.topics))
+    with col_s2:
+        st.metric("Style", st.session_state.book_type)
+    with col_s3:
+        has_cover = "Yes" if st.session_state.get('cover_image_path') else "No"
+        st.metric("AI Cover", has_cover)
+    with col_s4:
+        st.metric("Formats", "2")
+
+# Configuration Instructions
+with st.expander("🔧 Setup Instructions"):
+    st.markdown("""
+    ### API Configuration
     
-    with col1:
-        st.metric("📚 Chapters", len(st.session_state.topics) if 'topics' in st.session_state else 0)
-    with col2:
-        st.metric("🎯 Style", st.session_state.book_type)
-    with col3:
-        st.metric("🏢 Branded", "Yes")
-    with col4:
-        st.metric("📄 Format", "PDF/TXT")
+    1. **Google Gemini API:**
+       - Get key from: https://makersuite.google.com/app/apikey
+       - Set environment variable: `GOOGLE_API_KEY=your_key`
+    
+    2. **Hugging Face Token:**
+       - Get token from: https://huggingface.co/settings/tokens
+       - Set environment variable: `HF_TOKEN=your_token`
+    
+    ### For Streamlit Cloud Deployment:
+    
+    Add to `.streamlit/secrets.toml`:
+    ```toml
+    GOOGLE_API_KEY = "your_google_key"
+    HF_TOKEN = "your_huggingface_token"
+    ```
+    
+    ### Requirements (`requirements.txt`):
+    ```txt
+    streamlit>=1.28.0
+    google-generativeai>=0.3.0
+    requests>=2.31.0
+    reportlab>=4.0.0
+    Pillow>=10.0.0
+    ```
+    """)
 
-
-# FOOTER WITH KIDDOBOOKAI BRANDING
-# ==================================================
+# Footer
 st.markdown("---")
-st.markdown("""
-<div style="text-align: center; color: #6b7280; padding: 2rem 0 1rem 0;">
-    <div style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; padding: 8px 20px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 12px; border: 1px solid #bae6fd;">
-        <div style="width: 24px; height: 24px; background: linear-gradient(90deg, #1e40af 0%, #3b82f6 100%); border-radius: 6px;"></div>
-        <p style="margin: 0; font-weight: 700; color: #1e40af; font-size: 1.1rem;">KiddoBookAI</p>
-        <div style="width: 24px; height: 24px; background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%); border-radius: 6px;"></div>
-    </div>
-    <p style="margin: 10px 0 0 0; font-size: 0.9rem; color: #4b5563;">Professional AI Book Generation Platform</p>
-    <p style="margin: 5px 0 0 0; font-size: 0.8rem; color: #9ca3af;">All generated books include KiddoBookAI branding • Made with ❤️</p>
-</div>
-""", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #666;'>kiddoBookAi • Dual AI Book Generator • Gemini + Hugging Face</p>", unsafe_allow_html=True)
