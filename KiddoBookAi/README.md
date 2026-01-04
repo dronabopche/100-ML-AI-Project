@@ -1,121 +1,123 @@
-# 📚 KiddoBookAI - AI-Powered Book Generator
+# 📚 KiddoBookAI - AI-Powered Book Generator with Field-Specific Content & Covers
 
 <div align="center">
 
-![KiddoBookAI Banner](https://img.shields.io/badge/KiddoBookAI-AI%20Book%20Generator-blue)
+![KiddoBookAI Banner](https://img.shields.io/badge/KiddoBookAI-Field%20Specific%20Books-blueviolet)
 ![Python](https://img.shields.io/badge/Python-3.8%2B-green)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.31%2B-red)
-![Gemini AI](https://img.shields.io/badge/Gemini%20AI-2.5%20Flash-orange)
+![Gemini AI](https://img.shields.io/badge/Gemini%202.5%20Flash-AI%20Content-orange)
+![Hugging Face](https://img.shields.io/badge/Hugging%20Face-AI%20Covers-yellow)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
-**Transform Topics into Professional Books with AI**
+**Transform topics into professional field-specific books with AI-generated covers**
 
-[Live Demo](https://kiddobookai.streamlit.app) • [Features](#-features) • [Installation](#-installation) • [Architecture](#-architecture) • [Usage](#-usage)
+[Features](#-features) • [Live Demo](#-live-demo) • [Installation](#-installation) • [Field Support](#-field-support) • [Architecture](#-architecture) • [Usage](#-usage)
 
 </div>
 
 ## 🎯 Overview
 
-KiddoBookAI is an intelligent book generation platform that transforms your topics into professionally formatted educational books using Google's Gemini AI. Whether you're creating textbooks, exam guides, story-based learning materials, or research manuals, KiddoBookAI automates the entire content creation process with AI-powered chapter generation and professional PDF export.
+KiddoBookAI is an advanced book generation platform that creates **field-specific educational books** with **AI-generated covers**. Leveraging Google Gemini AI for content generation and Hugging Face models for cover art, it produces professional PDF books tailored to specific academic and professional fields.
 
-## ✨ Features
+## ✨ Key Features
 
 ### 🚀 Core Capabilities
-- **AI-Powered Content Generation**: Leverages Google Gemini 2.5 Flash for intelligent chapter creation
-- **Multiple Book Styles**: 5 distinct book formats (Textbook, Exam-prep, Story-style, Research, Beginner's Handbook)
-- **Professional PDF Export**: Generate branded PDFs with clean formatting
-- **Topic-Based Chapter Creation**: Convert bullet points or comma-separated topics into full chapters
-- **Real-Time Progress Tracking**: Visual progress bar during generation
-- **Session State Management**: Preserves your work across interactions
-- **Responsive UI**: Clean, modern interface with gradient styling
+- **Field-Specific Content**: 12 academic fields with customized prompts
+- **AI-Generated Covers**: Hugging Face FLUX/Stable Diffusion integration
+- **Multiple Book Styles**: 5 book formats with field-appropriate structures
+- **Smart Prompt Engineering**: Domain-specific content generation
+- **Professional PDF Export**: Branded documents with field-specific styling
+- **Real-Time Generation**: Progress tracking with visual feedback
 
-### 📁 Output Formats
-- **PDF Documents**: Professionally formatted with headers and chapters
-- **Text Files**: Raw text versions for easy editing
-- **Branded Content**: All exports include KiddoBookAI branding
-- **Chapter Organization**: Clear section breaks and numbering
+### 🎨 Field-Specific Customization
+Each field includes:
+- **Custom Image Prompts**: Tailored cover art generation
+- **Specialized Text Prompts**: Field-appropriate content focus
+- **Color Schemes**: Themed visual styling
+- **Icons**: Visual field representation
 
-### 🎨 Book Styles Available
-| Style | Description | Best For |
-|-------|-------------|----------|
-| 📖 **Textbook** | Academic, structured content with examples | Formal education |
-| 📝 **Exam-prep Notes** | Concise, practical study material | Test preparation |
-| 📚 **Story-style Guide** | Narrative, engaging learning | Creative teaching |
-| 🔬 **Research Manual** | Technical, data-driven content | Academic research |
-| 🎯 **Beginner's Handbook** | Simple, step-by-step instructions | New learners |
+### 📁 Supported Outputs
+- **PDF Documents**: Professionally formatted with covers
+- **Text Files**: Raw content for editing
+- **Cover Images**: AI-generated field-specific artwork
+- **Complete Packages**: All assets bundled together
 
 ## 🏗️ Architecture
 
 ```mermaid
 graph TB
-    A[User Input] --> B[Streamlit UI Layer]
-    B --> C[Session State Manager]
-    C --> D[Topic Processing Engine]
-    D --> E[AI Orchestrator]
-    E --> F[Gemini AI 2.5 Flash]
-    F --> G[Content Generator]
-    G --> H[PDF Export Engine]
-    G --> I[Text Export Engine]
-    H --> J[Download Manager]
-    I --> J
+    A[User Input] --> B[Field Selection]
+    B --> C[Topic Processing]
+    C --> D[AI Orchestrator]
     
-    subgraph "Input Layer"
-        A1[Book Title] --> B
-        A2[Book Description] --> B
-        A3[Topics List] --> B
-        A4[Book Style] --> B
+    subgraph "AI Services"
+        D --> E[Gemini 2.5 Flash<br/>Content Generation]
+        D --> F[Hugging Face<br/>Cover Generation]
     end
     
-    subgraph "Output Layer"
-        J --> K1[PDF Document]
-        J --> K2[Text File]
-        J --> K3[Visual Chapters]
-    end
+    E --> G[Field-Specific Content]
+    F --> H[Field-Styled Covers]
     
-    style F fill:#f9f,stroke:#333,stroke-width:2px
-    style H fill:#bbf,stroke:#333,stroke-width:2px
+    G --> I[PDF Generation Engine]
+    H --> I
+    
+    I --> J[Output Package]
+    J --> K[PDF Document]
+    J --> L[Text File]
+    J --> M[Cover Image]
+    
+    style B fill:#e1f5fe
+    style E fill:#f3e5f5
+    style F fill:#e8f5e8
+    style I fill:#fff3e0
 ```
 
-### System Components
+## 📚 Field Support
 
-#### **1. Frontend Layer (Streamlit)**
-- **Interactive UI**: Clean, responsive web interface
-- **Real-time Updates**: Live progress tracking
-- **State Management**: Session persistence across reruns
-- **Export Interface**: Download buttons for multiple formats
+### 12 Academic & Professional Fields
 
-#### **2. AI Processing Layer**
-- **Gemini 2.5 Flash Integration**: State-of-the-art language model
-- **Prompt Engineering**: Optimized prompts for each book style
-- **Content Structuring**: Consistent chapter formatting
-- **Error Handling**: Graceful fallbacks for API issues
+| Field | Icon | Color | Specialization |
+|-------|------|-------|---------------|
+| **Computer Science** | 💻 | `#2563EB` | Algorithms, programming, computational thinking |
+| **Mathematics** | 🧮 | `#DC2626` | Logical reasoning, problem-solving |
+| **Science** | 🔬 | `#059669` | Scientific method, experiments |
+| **History** | 📜 | `#D97706` | Historical context, timelines |
+| **Literature** | 📖 | `#7C3AED` | Narrative analysis, literary devices |
+| **Art & Design** | 🎨 | `#DB2777` | Creative expression, design principles |
+| **Business & Economics** | 💼 | `#0891B2` | Practical applications, case studies |
+| **Health & Medicine** | ⚕️ | `#65A30D` | Health education, medical knowledge |
+| **Engineering** | ⚙️ | `#475569` | Engineering principles, problem-solving |
+| **Psychology** | 🧠 | `#C026D3` | Human behavior, cognitive processes |
+| **Languages** | 🗣️ | `#EA580C` | Language acquisition, communication |
+| **General Education** | 🎓 | `#4F46E5` | Comprehensive learning, critical thinking |
 
-#### **3. Data Processing Layer**
-- **Topic Normalization**: Cleans and structures user input
-- **Chapter Management**: Organizes content into logical sections
-- **Format Conversion**: Transforms AI output into structured content
+### Book Styles & Structures
 
-#### **4. Export Layer**
-- **PDF Generation**: ReportLab-based professional formatting
-- **Text Processing**: Clean text export with proper formatting
-- **Brand Management**: Consistent KiddoBookAI branding
+| Style | Structure | Tone | Best For |
+|-------|-----------|------|----------|
+| **Textbook** | Learning Objectives, Key Terms, Examples | Academic, formal | Classroom instruction |
+| **Exam-prep Notes** | Quick Definitions, Memory Tricks, Common Questions | Concise, practical | Test preparation |
+| **Story-style Guide** | Story Introduction, Real-world Analogies | Narrative, engaging | Creative learning |
+| **Research Manual** | Methodologies, Case Studies, References | Technical, precise | Academic research |
+| **Beginner's Handbook** | Step-by-Step Guides, Hands-on Exercises | Friendly, simple | New learners |
 
 ## 🛠️ Technology Stack
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
+| Component | Technology | Purpose |
+|-----------|------------|---------|
 | **Frontend** | Streamlit 1.31+ | Interactive web interface |
-| **AI Engine** | Google Gemini AI 2.5 Flash | Content generation |
+| **Content AI** | Google Gemini 2.5 Flash | Field-specific content generation |
+| **Cover AI** | Hugging Face FLUX/Stable Diffusion | AI-generated book covers |
 | **PDF Generation** | ReportLab 4.0+ | Professional document creation |
-| **Core Language** | Python 3.8+ | Backend processing |
-| **Dependency Mgmt** | pip/requirements.txt | Package management |
-| **Deployment** | Streamlit Cloud/Hugging Face | Hosting options |
+| **Image Processing** | Pillow 10.2+ | Image handling and manipulation |
+| **API Integration** | Requests 2.31+ | External service communication |
 
 ## 📦 Installation
 
 ### Prerequisites
 - Python 3.8 or higher
-- Google AI Studio API key (free tier available)
+- Google AI Studio API key ([Get free key](https://makersuite.google.com/app/apikey))
+- Hugging Face API token ([Get token](https://huggingface.co/settings/tokens))
 - Git (for cloning)
 
 ### Step-by-Step Setup
@@ -125,7 +127,7 @@ graph TB
 git clone https://github.com/yourusername/kiddobookai.git
 cd kiddobookai
 
-# 2. Create virtual environment (recommended)
+# 2. Create virtual environment
 python -m venv venv
 
 # 3. Activate virtual environment
@@ -137,9 +139,14 @@ source venv/bin/activate
 # 4. Install dependencies
 pip install -r requirements.txt
 
-# 5. Configure API key
-# Replace in app.py or set environment variable:
-export GOOGLE_API_KEY="your-api-key-here"
+# 5. Configure API keys
+# Option A: Set environment variables
+export GOOGLE_API_KEY="your-gemini-api-key"
+export HF_TOKEN="your-huggingface-token"
+
+# Option B: Create .env file
+echo "GOOGLE_API_KEY=your-gemini-api-key" > .env
+echo "HF_TOKEN=your-huggingface-token" >> .env
 
 # 6. Run the application
 streamlit run app.py
@@ -151,227 +158,256 @@ streamlit==1.31.0
 google-generativeai==0.3.2
 reportlab==4.0.7
 Pillow==10.2.0
+requests==2.31.0
+python-dotenv==1.0.0
 ```
 
-## 🚀 Usage Guide
+## 🚀 Quick Start Guide
 
-### 1. **Setup Your Book**
+### 1. **Select Your Field**
 ```python
-# The application provides an intuitive interface:
-# 1. Enter book title and optional description
-# 2. Select book style from 5 options
-# 3. List topics (one per line or comma-separated)
+# Choose from 12 academic/professional fields
+# Each field provides specialized:
+# - Content prompts
+# - Cover art styles
+# - Color schemes
+# - Iconography
 ```
 
-### 2. **Generate Content**
+### 2. **Configure Your Book**
 ```python
-# Click "Generate Book" to:
-# 1. Process and normalize topics
-# 2. Generate chapters sequentially with AI
-# 3. Show real-time progress
-# 4. Display generated chapters in expandable sections
+# Input parameters:
+# - Book Title: e.g., "Advanced Python Programming"
+# - Description: Optional context for AI
+# - Book Style: Textbook, Exam-prep, etc.
+# - Topics: List your chapters/subjects
 ```
 
-### 3. **Export Options**
+### 3. **Generate with AI**
 ```python
-# After generation, download:
-# 1. PDF Document - Professional formatting
-# 2. Text File - Raw content for editing
-# Both include KiddoBookAI branding
+# Two-stage AI generation:
+# 1. Content Generation (Gemini AI):
+#    - Field-specific chapters
+#    - Appropriate structure and tone
+#    - Practical examples
+#
+# 2. Cover Generation (Hugging Face):
+#    - Field-themed artwork
+#    - Title integration
+#    - Professional book cover design
 ```
 
-### 4. **Example Input**
-```
-Book Title: Python Programming Fundamentals
-Book Style: Beginner's Handbook
-Topics:
-- Variables and Data Types
-- Control Structures
-- Functions and Modules
-- File Handling
-- Error Handling
+### 4. **Export & Download**
+```python
+# Multiple export options:
+# - Complete PDF with cover
+# - Text-only version
+# - Standalone cover image
+# - All assets bundled
 ```
 
-## 🎯 API Integration
+## 🎯 API Integration Details
 
 ### Google Gemini AI Configuration
 ```python
 import google.generativeai as genai
 
 # Configure API
-genai.configure(api_key=API_KEY)
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 model = genai.GenerativeModel("gemini-2.5-flash")
 
-# Content generation prompt
-prompt = f"""Write a chapter on "{topic}" for a {book_type.lower()}..."""
+# Field-specific prompt generation
+def generate_field_specific_text_prompt(topic, book_type, field):
+    field_config = FIELD_CONFIGS.get(field)
+    return f"""Write a chapter on "{topic}" for {field}...
+    {field_config['text_prompt_prefix']}
+    Focus on: {field_config.get('focus_areas', [])}"""
 ```
 
-### Prompt Engineering Strategy
-Each book style has optimized prompts for:
-- **Structure**: Pre-defined chapter layouts
-- **Tone**: Style-appropriate language
-- **Depth**: Content complexity matching the style
-- **Examples**: Relevant practical examples
+### Hugging Face Cover Generation
+```python
+def generate_field_specific_image_prompt(field, book_name, book_type):
+    field_config = FIELD_CONFIGS.get(field)
+    prompt = f"Professional book cover for {field}, {field_config['image_prompt']}"
+    prompt += f", {book_name}, {book_type} style"
+    return prompt
+```
 
-## 📊 Performance Metrics
+## 📊 Performance & Limits
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| Chapter Generation Time | ~10-15 seconds | Depends on topic complexity |
-| PDF Generation Time | ~2-5 seconds | For 5-10 chapters |
-| API Latency | < 3 seconds | Gemini 2.5 Flash response |
-| Max Topics per Book | Unlimited | Batched processing |
-| File Size (PDF) | ~100KB per chapter | Efficient compression |
+| Content Generation | ~15-20 sec/chapter | Gemini 2.5 Flash |
+| Cover Generation | ~30-60 seconds | Hugging Face API |
+| PDF Generation | ~3-5 seconds | ReportLab processing |
+| Max Topics | Unlimited | Batched processing |
+| File Size | ~150KB/chapter | Efficient PDF compression |
+| Image Quality | 512x512 px | High-quality covers |
 
-## 🔧 Development
+## 🔧 Advanced Configuration
 
-### Project Structure
-```
-kiddobookai/
-├── app.py                    # Main application
-├── requirements.txt          # Dependencies
-├── README.md                 # This file
-├── .gitignore               # Git ignore file
-├── generated_books/         # Output directory (auto-created)
-│   ├── *.pdf               # Generated PDFs
-│   └── *.txt              # Generated text files
-└── assets/                  # Optional: Screenshots, logos
-```
-
-### Key Functions
+### Custom Field Configuration
 ```python
-# Core functionality
-clean_topics()        # Normalizes user input
-explain_topic()       # Generates chapter content
-generate_pdf()        # Creates PDF document
-# Session state management
-# Real-time progress tracking
-# Error handling and validation
-```
-
-### Extending the Application
-
-#### Adding New Book Styles
-```python
-book_type_prompts = {
-    "New Style": {
-        "structure": "Your structure here",
-        "tone": "Your tone description"
-    }
+# Add new fields in FIELD_CONFIGS
+"Your Field": {
+    "image_prompt": "custom style description",
+    "text_prompt_prefix": "Custom focus area...",
+    "color_scheme": "#HEXCODE",
+    "icon": "🔧",
+    "focus_areas": ["Area 1", "Area 2"]
 }
 ```
 
-#### Customizing PDF Templates
+### Book Type Customization
 ```python
-def generate_pdf(book_text, book_name, book_type, filename):
-    # Modify ReportLab canvas settings
-    # Customize headers, footers, styling
-    # Add custom branding elements
+# Modify BOOK_TYPE_CONFIGS
+"Custom Book Type": {
+    "structure": "Your custom structure",
+    "tone": "Your preferred tone",
+    "additional_params": {}
+}
+```
+
+### Environment Variables
+```bash
+# Required
+GOOGLE_API_KEY=your_gemini_api_key_here
+HF_TOKEN=your_huggingface_token_here
+
+# Optional
+STREAMLIT_SERVER_PORT=8501
+STREAMLIT_SERVER_ADDRESS=0.0.0.0
+LOG_LEVEL=INFO
 ```
 
 ## 🌐 Deployment Options
 
 ### Option 1: Streamlit Cloud (Recommended)
 ```yaml
-# Free tier includes:
-# - 1GB RAM
-# - 1 CPU core
-# - Unlimited apps
-# - Custom domains
+# Streamlit Community Cloud (Free)
+# Features: Auto-deploy from GitHub, secrets management
+# Steps:
+# 1. Push to GitHub repository
+# 2. Connect at share.streamlit.io
+# 3. Add secrets: GOOGLE_API_KEY, HF_TOKEN
+# 4. Deploy with one click
 ```
-
-**Deployment Steps:**
-1. Push to GitHub
-2. Connect at [share.streamlit.io](https://share.streamlit.io)
-3. Configure API key as secrets
-4. Deploy with one click
 
 ### Option 2: Hugging Face Spaces
 ```yaml
-# Free features:
-# - CPU/GPU options
-# - Custom environments
-# - Auto-deploy from Git
+# Hugging Face Spaces (Free)
+# Features: GPU support, custom Docker
+# Steps:
+# 1. Create new Space
+# 2. Select Streamlit SDK
+# 3. Add secrets in Settings
+# 4. Push your code
 ```
 
-### Option 3: Self-Hosted
-```bash
-# Using Docker
-docker build -t kiddobookai .
-docker run -p 8501:8501 kiddobookai
-
-# Using traditional hosting
-# Configure reverse proxy with Nginx/Apache
+### Option 3: Self-Hosted Docker
+```dockerfile
+# Dockerfile
+FROM python:3.9-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+EXPOSE 8501
+CMD ["streamlit", "run", "app.py", "--server.port=8501"]
 ```
 
 ## 🔐 Security & Best Practices
 
-### API Key Management
+### API Security
 ```python
-# NEVER commit API keys to version control
+# Never hardcode API keys
 # Use environment variables
 import os
-API_KEY = os.getenv("GOOGLE_API_KEY")
+api_key = os.getenv("GOOGLE_API_KEY")  # Secure method
+
+# Validate keys on startup
+if not api_key:
+    st.error("API key not configured")
+    st.stop()
 ```
 
-### Input Validation
-- Sanitize user inputs
-- Limit topic length
-- Validate book titles
-- Handle special characters
+### Input Sanitization
+```python
+def clean_topics(raw_text: str) -> list[str]:
+    """Sanitize and normalize user input"""
+    topics = []
+    lines = raw_text.split("\n")
+    for line in lines:
+        # Remove special characters and normalize
+        line = re.sub(r"[^\w\s,.-]", "", line.strip())
+        if line:
+            topics.append(line)
+    return topics
+```
 
 ### Rate Limiting
 ```python
-# Implement if needed
+# Implement delays for API calls
 import time
-def rate_limited_generate():
-    time.sleep(1)  # Delay between API calls
-    return model.generate_content(prompt)
+
+def safe_api_call(api_function, *args, **kwargs):
+    result = api_function(*args, **kwargs)
+    time.sleep(1)  # Prevent rate limiting
+    return result
 ```
 
-## 📈 Future Enhancements
+## 📈 Future Roadmap
 
 ### Planned Features
-- [ ] Multi-language support
-- [ ] Custom branding options
-- [ ] Template library
-- [ ] Collaborative editing
-- [ ] Version history
-- [ ] AI image generation for covers
-- [ ] Audio book conversion
-- [ ] Export to EPUB/MOBI formats
+- [ ] **Multi-language Support**: Generate books in different languages
+- [ ] **Advanced Cover Customization**: More control over cover generation
+- [ ] **Template Library**: Pre-designed templates for each field
+- [ ] **Collaboration Features**: Team-based book creation
+- [ ] **Export Formats**: EPUB, MOBI, DOCX support
+- [ ] **Audio Books**: Text-to-speech integration
+- [ ] **Analytics Dashboard**: Usage statistics and insights
 
 ### Technical Improvements
-- [ ] Caching for faster regeneration
-- [ ] Background task processing
-- [ ] Database integration for saving projects
-- [ ] User authentication system
-- [ ] Advanced analytics dashboard
+- [ ] **Caching System**: Faster regeneration of content
+- [ ] **Batch Processing**: Generate multiple books simultaneously
+- [ ] **Database Integration**: Save and manage book projects
+- [ ] **User Accounts**: Personal libraries and history
+- [ ] **API Versioning**: Stable external API
 
 ## 🤝 Contributing
 
-We welcome contributions! Here's how:
+We welcome contributions from the community! Here's how you can help:
 
-1. **Fork the repository**
-2. **Create a feature branch**
+### Development Setup
 ```bash
-git checkout -b feature/amazing-feature
-```
-3. **Commit your changes**
-```bash
-git commit -m 'Add amazing feature'
-```
-4. **Push to the branch**
-```bash
-git push origin feature/amazing-feature
-```
-5. **Open a Pull Request**
+# 1. Fork the repository
+# 2. Clone your fork
+git clone https://github.com/your-username/kiddobookai.git
+cd kiddobookai
 
-### Contribution Guidelines
-- Follow PEP 8 coding standards
-- Add tests for new features
-- Update documentation
-- Ensure backward compatibility
+# 3. Create development branch
+git checkout -b feature/your-feature
+
+# 4. Install development dependencies
+pip install -r requirements-dev.txt
+
+# 5. Make your changes and test
+pytest tests/
+
+# 6. Commit and push
+git commit -m "Add: your feature description"
+git push origin feature/your-feature
+
+# 7. Open a Pull Request
+```
+
+### Contribution Areas
+- **New Fields**: Add support for additional academic fields
+- **Cover Models**: Integrate new AI image generation models
+- **UI/UX Improvements**: Enhance the user interface
+- **Documentation**: Improve guides and examples
+- **Testing**: Add unit and integration tests
+- **Performance**: Optimize generation speed
 
 ## 📄 License
 
@@ -395,27 +431,92 @@ copies or substantial portions of the Software.
 
 ## 🙏 Acknowledgments
 
-- **Google Gemini AI** - For powerful language model capabilities
-- **Streamlit** - For the amazing web framework
-- **ReportLab** - For PDF generation functionality
-- **Open Source Community** - For continuous inspiration
+- **Google Gemini AI** - For advanced language model capabilities
+- **Hugging Face** - For AI model hosting and inference APIs
+- **Streamlit** - For the incredible web app framework
+- **ReportLab** - For robust PDF generation
+- **Open Source Community** - For continuous inspiration and support
 
-## 📞 Support
+## 📞 Support & Resources
 
 ### Documentation
 - [Full Documentation](docs/) - Detailed usage guides
 - [API Reference](docs/api.md) - Technical specifications
+- [Field Guides](docs/fields/) - Field-specific best practices
 - [FAQ](docs/faq.md) - Common questions and solutions
 
-### Community
+### Community & Support
 - [GitHub Issues](https://github.com/yourusername/kiddobookai/issues) - Bug reports and feature requests
 - [Discussions](https://github.com/yourusername/kiddobookai/discussions) - Community forum
-- [Twitter](https://twitter.com/kiddobookai) - Latest updates
+- [Email Support](mailto:support@kiddobookai.com) - Direct assistance
 
-### Professional Support
-For enterprise features or custom implementations, contact:
-- **Email**: support@kiddobookai.com
-- **Website**: [kiddobookai.com](https://kiddobookai.com)
+### Learning Resources
+- [Tutorial Videos](https://youtube.com/playlist?list=...) - Step-by-step guides
+- [Example Books](examples/) - Sample generated books
+- [Blog](https://blog.kiddobookai.com) - Updates and tips
+
+## 🚀 Quick Commands Reference
+
+```bash
+# Development
+streamlit run app.py                    # Run locally
+streamlit run app.py --server.port 8080 # Custom port
+python -m pytest tests/                 # Run tests
+
+# Production
+docker build -t kiddobookai .           # Build Docker image
+docker run -p 8501:8501 kiddobookai     # Run container
+
+# Maintenance
+python scripts/cleanup.py               # Clean generated files
+python scripts/backup.py                # Backup configurations
+```
+
+## 📖 Example Use Cases
+
+### Educational Institutions
+- **Custom Textbooks**: Create field-specific course materials
+- **Study Guides**: Generate exam preparation materials
+- **Research Compilations**: Compile papers into handbooks
+- **Departmental Resources**: Field-specific reference materials
+
+### Corporate Training
+- **Onboarding Manuals**: Company and role-specific guides
+- **Process Documentation**: Standard operating procedures
+- **Training Materials**: Skill development resources
+- **Knowledge Bases**: Internal reference libraries
+
+### Content Creators
+- **E-books**: Convert blog series into structured books
+- **Course Materials**: Create accompanying resources
+- **Tutorial Series**: Step-by-step learning guides
+- **Portfolio Pieces**: Showcase expertise through books
+
+### Personal Projects
+- **Learning Journals**: Document personal learning journeys
+- **Family Histories**: Create narrative family books
+- **Recipe Collections**: Themed cookbooks with instructions
+- **Hobby Guides**: Comprehensive guides for personal interests
+
+---
+
+<div align="center">
+
+## 🎉 Get Started Today!
+
+**Ready to create your first field-specific AI-generated book?**
+
+1. **Choose your field** from 12 specialized options
+2. **Configure your book** with custom details
+3. **Generate with AI** for content and covers
+4. **Download professionally** formatted outputs
+
+**Transform your knowledge into beautifully crafted books!** 📚✨
+
+[![Deploy on Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/deploy)
+[![Try on Hugging Face](https://img.shields.io/badge/🤗-Try%20on%20Spaces-yellow)](https://huggingface.co/spaces)
+
+</div>
 
 ---
 
@@ -423,57 +524,9 @@ For enterprise features or custom implementations, contact:
 
 **Built with ❤️ by the KiddoBookAI Team**
 
-[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/kiddobookai&type=Date)](https://star-history.com/#yourusername/kiddobookai&Date)
+*Empowering education through AI-powered book creation*
 
-*Transform ideas into knowledge, one chapter at a time.*
+[![GitHub stars](https://img.shields.io/github/stars/yourusername/kiddobookai?style=social)](https://github.com/yourusername/kiddobookai/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/yourusername/kiddobookai?style=social)](https://github.com/yourusername/kiddobookai/network/members)
 
 </div>
-
-## 🚀 Quick Start Commands
-
-```bash
-# Clone and run
-git clone https://github.com/yourusername/kiddobookai.git
-cd kiddobookai
-pip install -r requirements.txt
-streamlit run app.py
-
-# Run with custom port
-streamlit run app.py --server.port 8080
-
-# Run in development mode
-streamlit run app.py --logger.level=debug
-```
-
-## 📖 Example Use Cases
-
-### Educational Institutions
-- Create custom textbooks for courses
-- Generate study guides for students
-- Develop research compilations
-
-### Content Creators
-- Produce e-books from blog posts
-- Create tutorial series
-- Generate workshop materials
-
-### Corporate Training
-- Develop onboarding handbooks
-- Create process documentation
-- Generate training manuals
-
-### Personal Use
-- Compile family stories
-- Create recipe books
-- Document personal projects
-
----
-
-**Ready to create your first AI-generated book?** 🎉
-
-1. Visit the [Live Demo](#) or deploy your own instance
-2. Enter your topics and choose a style
-3. Generate and download your professional book
-4. Share your creations with the world!
-
-Happy Book Creating! 📚✨
