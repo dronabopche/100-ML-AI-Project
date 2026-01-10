@@ -24,7 +24,7 @@ if GOOGLE_API_KEY:
     genai.configure(api_key=GOOGLE_API_KEY)
     model = genai.GenerativeModel("gemini-2.5-flash")
 else:
-    st.warning("Google API key not found. Please set GOOGLE_API_KEY environment variable.")
+    st.warning("API key not found. Please set GOOGLE_API_KEY environment variable.")
 
 # Hugging Face Configuration
 HF_FLUX_API_URL = "https://router.huggingface.co/replicate/v1/models/black-forest-labs/flux-2-dev/predictions"
@@ -176,7 +176,7 @@ def generate_book_cover_hf(book_name: str, book_type: str, field: str, book_desc
     """Generate book cover using Hugging Face FLUX model with field-specific prompts"""
     
     if not HF_TOKEN:
-        st.error("Hugging Face token not configured. Please set HF_TOKEN environment variable.")
+        st.error("Image generation API token not configured.")
         return None
     
     try:
@@ -237,11 +237,11 @@ def generate_book_cover_hf(book_name: str, book_type: str, field: str, book_desc
                 st.warning("Image generation timed out. Please try again.")
                 return None
             else:
-                st.error("Invalid response from Hugging Face API")
+                st.error("Invalid response from image generation API")
                 return None
                 
         else:
-            st.error(f"Hugging Face API Error: {response.status_code} - {response.text}")
+            st.error(f"Image API Error: {response.status_code}")
             return None
             
     except Exception as e:
@@ -283,7 +283,7 @@ def generate_book_cover_simple(book_name: str, book_type: str, field: str, book_
                 f.write(response.content)
             return image_path
         else:
-            st.error(f"Hugging Face Error: {response.status_code}")
+            st.error(f"Image Generation Error: {response.status_code}")
             return None
             
     except Exception as e:
@@ -459,8 +459,8 @@ for key in ['book_name', 'book_type', 'book_description', 'raw_input']:
 
 # Check API availability
 api_status = {
-    "Google Gemini": GOOGLE_API_KEY is not None,
-    "Hugging Face": HF_TOKEN is not None
+    "Text Generation": GOOGLE_API_KEY is not None,
+    "Image Generation": HF_TOKEN is not None
 }
 
 # App Header with field selector
@@ -510,7 +510,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# API Status Indicator
+# API Status Indicator (simplified)
 status_cols = st.columns(len(api_status))
 for idx, (service, status) in enumerate(api_status.items()):
     with status_cols[idx]:
@@ -601,7 +601,7 @@ if reset_clicked:
 # Handle Generate
 if generate_clicked:
     if not GOOGLE_API_KEY:
-        st.error("Google API key not configured. Please set GOOGLE_API_KEY environment variable.")
+        st.error("Text generation API key not configured.")
         st.stop()
     
     if not book_name.strip():
@@ -787,4 +787,4 @@ if 'generated' in st.session_state and st.session_state.generated:
 
 # Footer
 st.markdown("---")
-st.markdown("<p style='text-align: center; color: #666;'>kiddoBookAi • Field-specific Book Generator • Gemini + Hugging Face</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #666;'>kiddoBookAi • Field-specific Educational Book Generator</p>", unsafe_allow_html=True)

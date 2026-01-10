@@ -1,0 +1,35 @@
+name: kidbookai
+description: "KiddoBookAI Web Application"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.9.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # ✅ Firebase (LATEST COMPATIBLE WITH FLUTTER 3.35+)
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+
+  # State management (optional, kept since you had it)
+  provider: ^6.1.2
+
+  http: ^1.1.0
+  path_provider: ^2.1.0
+  pdf: ^3.10.3
+  printing: ^5.11.2
+  open_file: ^3.3.3
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
