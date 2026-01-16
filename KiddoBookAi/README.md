@@ -1,11 +1,13 @@
-# KiddoBookAI <div align="right"> <img src="web/icon.png" alt="Features" width="50"/> </div> 
+# KiddoBookAI <div align="center"> <img src="web/icon.png" alt="Features" width="60"/> </div> 
 
 KiddoBookAI is a playful AI-powered platform with Flutter frontend and minimalist Flask backend.  
 Generate custom children's stories or get AI-powered resume feedback - all with a clean, modular design.
 
 ---
+
  • [Live Demo](https://kiddobookai.netlify.app)
 <div align="center"> <img src="web/demo.png" alt="Features" width="600"/> </div> 
+
 ## Features
 
 - **AI Children's Book Generation** using Remine API
