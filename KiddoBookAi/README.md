@@ -1,4 +1,4 @@
-<div align="left"> <img src="web/icon.png" alt="Features" width="50"/> </div> # KiddoBookAI
+# KiddoBookAI <div align="right"> <img src="web/icon.png" alt="Features" width="50"/> </div> 
 
 KiddoBookAI is a playful AI-powered platform with Flutter frontend and minimalist Flask backend.  
 Generate custom children's stories or get AI-powered resume feedback - all with a clean, modular design.
