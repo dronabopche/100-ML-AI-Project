@@ -11,25 +11,44 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # ✅ Firebase (LATEST COMPATIBLE WITH FLUTTER 3.35+)
-  firebase_core: ^3.6.0
-  firebase_auth: ^5.3.1
+  # Firebase
+  firebase_core: ^4.3.0
+  firebase_auth: ^6.1.3
+  firebase_storage: ^13.0.5
+  cloud_firestore: ^6.1.1
+  image_picker: ^1.0.0
+  file_picker: ^5.3.3  # For file saving
+  
 
-  # State management (optional, kept since you had it)
+  # Social Sign-In Packages - ADD THESE!
+  google_sign_in: ^7.2.0
+  sign_in_with_apple: ^7.0.1
+
+  # Optional: For web platform support
+  flutter_web_auth_2: ^5.0.0
+
+  # Existing dependencies
   provider: ^6.1.2
-
   http: ^1.1.0
   path_provider: ^2.1.0
   pdf: ^3.10.3
   printing: ^5.11.2
   open_file: ^3.3.3
-
   cupertino_icons: ^1.0.8
+  share_plus: ^7.2.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/fonts/Roboto.ttf
+
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto.ttf

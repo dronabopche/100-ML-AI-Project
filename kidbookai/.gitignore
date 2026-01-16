@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+kidbookai/lib/toolkits/resume_roast/.env
+kidbookai/lib/toolkits/book_generator/.env
