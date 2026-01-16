@@ -286,7 +286,7 @@ class _LandingPageState extends State<LandingPage> {
                       const SizedBox(width: 4),
                       if (screenWidth > 600)
                         Text(
-                          '- Your AI Learning Companion',
+                          '- Tools That Create Impact',
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.grey.shade600,
@@ -930,7 +930,7 @@ class _LandingPageState extends State<LandingPage> {
         children: [
           Expanded(
             child: Text(
-              'KiddoBookAi',
+              'NO FUNDS TO KEEP BACKEND RUNNING',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade600,
@@ -1121,7 +1121,7 @@ class _LandingPageState extends State<LandingPage> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '4.8 (2.3k reviews)',
+                              '4.8 (23 reviews)',
                               style: TextStyle(
                                 color: Colors.grey.shade600,
                                 fontSize: 14,
@@ -1169,7 +1169,7 @@ class _LandingPageState extends State<LandingPage> {
         child: Column(
           children: [
             Text(
-              'Ready to start learning?',
+              'Ready to start Building?',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
@@ -1178,7 +1178,7 @@ class _LandingPageState extends State<LandingPage> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Join thousands of kids who are already creating amazing stories with AI',
+              'Join thousands of Automated Work Flow with amazing AI',
               style: TextStyle(fontSize: 18, color: Colors.grey.shade700),
             ),
             const SizedBox(height: 24),
@@ -1211,8 +1211,8 @@ class _LandingPageState extends State<LandingPage> {
                   ),
                   child: Text(
                     widget.currentUser != null
-                        ? 'Continue Learning'
-                        : 'Start Creating Now',
+                        ? 'Continue building'
+                        : 'Start Unlimited now',
                     style: const TextStyle(
                       fontSize: 18,
                       color: Colors.white,

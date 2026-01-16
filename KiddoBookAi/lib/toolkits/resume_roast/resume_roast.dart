@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
@@ -38,8 +37,6 @@ class _ResumeAnalysisPageState extends State<ResumeAnalysisPage>
 
   final Map<String, String> _analysisResults = {};
   String _resumePreview = '';
-  String _serverStatus = 'Not connected';
-  Color _serverStatusColor = Colors.red;
 
   @override
   void initState() {
@@ -53,7 +50,7 @@ class _ResumeAnalysisPageState extends State<ResumeAnalysisPage>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
 
-    //test connection on init
+    // Test connection on init
     _testConnection();
   }
 
@@ -66,8 +63,6 @@ class _ResumeAnalysisPageState extends State<ResumeAnalysisPage>
   Future<void> _testConnection() async {
     setState(() {
       _isTestingConnection = true;
-      _serverStatus = 'Testing connection...';
-      _serverStatusColor = Colors.orange;
     });
 
     try {
@@ -81,21 +76,15 @@ class _ResumeAnalysisPageState extends State<ResumeAnalysisPage>
       if (response.statusCode == 200) {
         setState(() {
           _isConnected = true;
-          _serverStatus = 'Connected ✅';
-          _serverStatusColor = Colors.green;
         });
       } else {
         setState(() {
           _isConnected = false;
-          _serverStatus = 'Connection failed ❌';
-          _serverStatusColor = Colors.red;
         });
       }
     } catch (e) {
       setState(() {
         _isConnected = false;
-        _serverStatus = 'Connection error: $e';
-        _serverStatusColor = Colors.red;
       });
     } finally {
       setState(() {
@@ -105,6 +94,11 @@ class _ResumeAnalysisPageState extends State<ResumeAnalysisPage>
   }
 
   Future<void> _pickFile() async {
+    if (!_isConnected) {
+      _showSnackBar('Out of Credits , Sorry ', Colors.red);
+      return;
+    }
+
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
@@ -132,11 +126,6 @@ class _ResumeAnalysisPageState extends State<ResumeAnalysisPage>
   }
 
   Future<void> _analyzeResume(PlatformFile file) async {
-    if (!_isConnected) {
-      _showSnackBar('Please connect to backend first', Colors.red);
-      return;
-    }
-
     setState(() {
       _isAnalyzing = true;
       _analysisResults.clear();
@@ -319,44 +308,142 @@ class _ResumeAnalysisPageState extends State<ResumeAnalysisPage>
     }
   }
 
-  Widget _buildServerStatus() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: _serverStatusColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _serverStatusColor),
+  Widget _buildConnectionIndicator() {
+    return Tooltip(
+      message: _isConnected ? 'Backend connected' : 'Backend disconnected',
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: _isConnected ? Colors.green.shade600 : Colors.red.shade600,
+        ),
+        child: Center(
+          child: _isTestingConnection
+              ? SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : Icon(
+                  _isConnected ? Icons.wifi : Icons.wifi_off,
+                  color: Colors.white,
+                  size: 20,
+                ),
+        ),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+    );
+  }
+
+  Widget _buildUploadSection() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.deepPurple.shade200, width: 2),
+      ),
+      child: Column(
         children: [
-          if (_isTestingConnection)
-            SizedBox(
-              width: 12,
-              height: 12,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(_serverStatusColor),
+          Icon(Icons.cloud_upload, size: 50, color: Colors.deepPurple.shade400),
+          const SizedBox(height: 15),
+          Text(
+            'Upload Resume (PDF/TXT/DOC)',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Max file size: 5MB',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          if (_selectedFile == null)
+            ElevatedButton.icon(
+              onPressed: _pickFile,
+              icon: const Icon(Icons.upload_file),
+              label: const Text('Choose File'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple.shade600,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 30,
+                  vertical: 15,
+                ),
               ),
             )
           else
-            Icon(
-              _isConnected ? Icons.wifi : Icons.wifi_off,
-              size: 16,
-              color: _serverStatusColor,
-            ),
-          const SizedBox(width: 8),
-          Text(
-            _serverStatus,
-            style: TextStyle(
-              color: _serverStatusColor,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          if (!_isConnected)
-            TextButton(
-              onPressed: _testConnection,
-              child: const Text('Retry', style: TextStyle(fontSize: 12)),
+            Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    color: Colors.deepPurple.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _selectedFile!.extension == 'pdf'
+                            ? Icons.picture_as_pdf
+                            : Icons.description,
+                        color: Colors.deepPurple,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _selectedFile!.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              '${(_selectedFile!.size / 1024).toStringAsFixed(1)} KB',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: _resetFile,
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 15),
+                if (_isAnalyzing)
+                  Column(
+                    children: [
+                      const CircularProgressIndicator(color: Colors.deepPurple),
+                      const SizedBox(height: 10),
+                      Text(
+                        'AI is analyzing your resume...',
+                        style: TextStyle(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
             ),
         ],
       ),
@@ -372,8 +459,13 @@ class _ResumeAnalysisPageState extends State<ResumeAnalysisPage>
         title: const Text('AI Resume Roaster'),
         backgroundColor: Colors.deepPurple.shade700,
         actions: [
-          _buildServerStatus(),
-          const SizedBox(width: 10),
+          IconButton(
+            onPressed: _testConnection,
+            icon: _buildConnectionIndicator(),
+            tooltip: _isConnected
+                ? 'Backend connected'
+                : 'Click to test connection',
+          ),
           IconButton(
             onPressed: widget.onToggleTheme,
             icon: Icon(
@@ -381,14 +473,6 @@ class _ResumeAnalysisPageState extends State<ResumeAnalysisPage>
               color: Colors.white,
             ),
             tooltip: 'Toggle theme',
-          ),
-          IconButton(
-            onPressed: _testConnection,
-            icon: Icon(
-              Icons.refresh,
-              color: _isConnected ? Colors.green.shade300 : Colors.white,
-            ),
-            tooltip: 'Test connection',
           ),
         ],
       ),
@@ -421,16 +505,6 @@ class _ResumeAnalysisPageState extends State<ResumeAnalysisPage>
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      'Backend: ${widget.backendUrl}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withOpacity(0.6),
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
                       'Upload your resume for a detailed roast',
                       style: TextStyle(
                         fontSize: 16,
@@ -439,220 +513,16 @@ class _ResumeAnalysisPageState extends State<ResumeAnalysisPage>
                         ).colorScheme.onSurface.withOpacity(0.6),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 30),
-
-              // Connection Status Card
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: _isConnected
-                      ? Colors.green.withOpacity(0.1)
-                      : Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: _isConnected ? Colors.green : Colors.red,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      _isConnected ? Icons.check_circle : Icons.error,
-                      color: _isConnected ? Colors.green : Colors.red,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _isConnected
-                                ? 'Connected to Backend'
-                                : 'Not Connected',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            widget.backendUrl,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withOpacity(0.7),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: _testConnection,
-                      icon: Icon(
-                        _isTestingConnection
-                            ? Icons.hourglass_empty
-                            : Icons.refresh,
-                        size: 16,
-                      ),
-                      label: Text(_isTestingConnection ? 'Testing...' : 'Test'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple.shade600,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // File Upload Section
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(
-                    color: Colors.deepPurple.shade200,
-                    width: 2,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.cloud_upload,
-                      size: 50,
-                      color: Colors.deepPurple.shade400,
-                    ),
-                    const SizedBox(height: 15),
-                    Text(
-                      'Upload Resume (PDF/TXT/DOC)',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Max file size: 5MB',
-                      style: TextStyle(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withOpacity(0.6),
-                      ),
-                    ),
                     const SizedBox(height: 20),
-
-                    if (!_isConnected)
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.shade50,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.orange),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.warning, color: Colors.orange),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                'Connect to backend first to analyze resume',
-                                style: TextStyle(color: Colors.orange.shade800),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    else if (_selectedFile == null)
-                      ElevatedButton.icon(
-                        onPressed: _pickFile,
-                        icon: const Icon(Icons.upload_file),
-                        label: const Text('Choose File'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.deepPurple.shade600,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 30,
-                            vertical: 15,
-                          ),
-                        ),
-                      )
-                    else
-                      Column(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(15),
-                            decoration: BoxDecoration(
-                              color: Colors.deepPurple.shade50,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  _selectedFile!.extension == 'pdf'
-                                      ? Icons.picture_as_pdf
-                                      : Icons.description,
-                                  color: Colors.deepPurple,
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _selectedFile!.name,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      Text(
-                                        '${(_selectedFile!.size / 1024).toStringAsFixed(1)} KB',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey.shade600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: _resetFile,
-                                  icon: const Icon(Icons.close),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 15),
-                          if (_isAnalyzing)
-                            Column(
-                              children: [
-                                const CircularProgressIndicator(
-                                  color: Colors.deepPurple,
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  'AI is analyzing your resume...',
-                                  style: TextStyle(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurface.withOpacity(0.7),
-                                  ),
-                                ),
-                              ],
-                            ),
-                        ],
-                      ),
                   ],
+                ),
+              ),
+
+              // Centered Upload Section
+              Center(
+                child: Container(
+                  width: double.infinity,
+                  child: _buildUploadSection(),
                 ),
               ),
               const SizedBox(height: 30),
