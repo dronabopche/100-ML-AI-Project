@@ -193,7 +193,7 @@ class _MyAppState extends State<MyApp> {
             AIMeetingNotesPage(onToggleTheme: toggleTheme),
         '/BookGeneration': (context) => BookGeneration(
           onToggleTheme: toggleTheme,
-          backendUrl: 'http://127.0.0.1:5000',
+          backendUrl: 'https://book-generation.onrender.com',
         ),
       },
     );

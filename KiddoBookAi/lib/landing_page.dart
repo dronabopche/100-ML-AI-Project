@@ -118,7 +118,7 @@ class _LandingPageState extends State<LandingPage> {
       'color': Colors.amber,
       'page': BookGeneration(
         onToggleTheme: () {},
-        backendUrl: 'http://127.0.0.1:5000',
+        backendUrl: 'https://book-generation.onrender.com',
       ),
     },
   ];

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
+import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 class BookGeneration extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -40,11 +42,15 @@ class _BookGenerationState extends State<BookGeneration>
   late AnimationController _animationController;
   late Animation<double> _progressAnimation;
   bool _showDownloadButton = false;
-  bool _fontsLoaded = false;
 
   // Backend book tracking
   String? _generatedBookId;
   String? _generatedFilename;
+  bool _isDownloading = false;
+
+  // Backend status
+  BackendStatus _backendStatus = BackendStatus.unknown;
+  Timer? _statusCheckTimer;
 
   // Field configurations
   final Map<String, Map<String, dynamic>> _fieldConfigs = {
@@ -78,15 +84,9 @@ class _BookGenerationState extends State<BookGeneration>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
 
-    // Load custom fonts (optional now since PDF is generated in backend)
-    _loadCustomFonts();
-  }
-
-  Future<void> _loadCustomFonts() async {
-    // Not needed for PDF generation since it's done in backend
-    setState(() {
-      _fontsLoaded = true;
-    });
+    // Start checking backend status
+    _checkBackendStatus();
+    _startStatusCheckTimer();
   }
 
   @override
@@ -95,7 +95,40 @@ class _BookGenerationState extends State<BookGeneration>
     _titleController.dispose();
     _descriptionController.dispose();
     _topicsController.dispose();
+    _statusCheckTimer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _checkBackendStatus() async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse('${widget.backendUrl}/api/health'),
+            headers: {'Content-Type': 'application/json'},
+          )
+          .timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _backendStatus = BackendStatus.healthy;
+        });
+      } else {
+        setState(() {
+          _backendStatus = BackendStatus.unhealthy;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _backendStatus = BackendStatus.unhealthy;
+      });
+    }
+  }
+
+  void _startStatusCheckTimer() {
+    _statusCheckTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      _checkBackendStatus();
+    });
   }
 
   Future<void> _generateBook() async {
@@ -103,6 +136,20 @@ class _BookGenerationState extends State<BookGeneration>
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill in all required fields')),
       );
+      return;
+    }
+
+    // Check backend status before generating
+    if (_backendStatus != BackendStatus.healthy) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Backend service is currently unavailable. Please try again later.',
+          ),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      await _checkBackendStatus(); // Refresh status
       return;
     }
 
@@ -117,11 +164,22 @@ class _BookGenerationState extends State<BookGeneration>
       _showDownloadButton = false;
       _generatedBookId = null;
       _generatedFilename = null;
+      _isDownloading = false;
     });
 
     try {
+      // Simulate progress updates
+      for (int i = 0; i < 10; i++) {
+        if (!_isGenerating) break;
+        await Future.delayed(const Duration(milliseconds: 300));
+        setState(() {
+          _generationProgress = (i + 1) / 10;
+          _currentStep = 'Generating chapter ${i + 1}/${_topicsList.length}...';
+        });
+      }
+
       setState(() {
-        _currentStep = 'Generating book content...';
+        _currentStep = 'Finalizing book...';
       });
 
       // Call backend to generate complete book with PDF
@@ -142,20 +200,27 @@ class _BookGenerationState extends State<BookGeneration>
 
         if (data['success'] == true) {
           // Get book ID and filename from backend
-          final bookId = data['book_id'] as String;
-          final filename = data['filename'] as String;
-          final chapters = data['book_info']['total_chapters'] as int;
+          final bookId = data['book_id'] as String? ?? '';
+          final filename = data['filename'] as String? ?? 'book.pdf';
+          final chapters = (data['book_info']?['total_chapters'] as int?) ?? 0;
 
           // Store chapters for display
           if (data['chapters'] != null) {
             final chaptersList = data['chapters'] as List;
             _generatedChapters = chaptersList
-                .map((c) => c['content'] as String)
+                .map(
+                  (c) => (c['content']?.toString() ?? 'No content available'),
+                )
                 .toList();
+          } else {
+            _generatedChapters = List.filled(
+              _topicsList.length,
+              'Content generation in progress...',
+            );
           }
 
           setState(() {
-            _generatedBookId = bookId;
+            _generatedBookId = bookId.isNotEmpty ? bookId : null;
             _generatedFilename = filename;
             _isGenerating = false;
             _currentStep = 'Book generation complete!';
@@ -171,7 +236,7 @@ class _BookGenerationState extends State<BookGeneration>
             ),
           );
         } else {
-          throw Exception(data['error'] ?? 'Unknown error');
+          throw Exception(data['error']?.toString() ?? 'Unknown error');
         }
       } else {
         throw Exception('HTTP ${response.statusCode}');
@@ -181,6 +246,9 @@ class _BookGenerationState extends State<BookGeneration>
         _isGenerating = false;
         _currentStep = 'Error generating book';
       });
+
+      // Update backend status on error
+      await _checkBackendStatus();
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -199,60 +267,72 @@ class _BookGenerationState extends State<BookGeneration>
       return;
     }
 
+    setState(() {
+      _isDownloading = true;
+    });
+
     try {
       // Create download URL
       final downloadUrl =
           '${widget.backendUrl}/api/download-book/$_generatedBookId';
 
-      // Open the download URL in browser (this will trigger download)
+      // Check if we're on web or mobile
+      final isWeb = identical(0, 0.0); // Simple web detection
 
-      // For now, show a dialog with download link
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Download Book'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Book: ${_titleController.text}'),
-              const SizedBox(height: 10),
-              const Text('Click the link below to download your book:'),
-              const SizedBox(height: 10),
-              GestureDetector(
-                onTap: () {
-                  // In web, this will open in new tab
-                  // In mobile, need to use url_launcher package
-                  Clipboard.setData(ClipboardData(text: downloadUrl));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Download link copied to clipboard'),
-                    ),
-                  );
-                  Navigator.pop(context);
-                },
-                child: Text(
-                  downloadUrl,
-                  style: const TextStyle(
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
+      if (isWeb) {
+        // For web, open in new tab
+        await launchUrl(
+          Uri.parse(downloadUrl),
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        // For mobile, download and save locally
+        final response = await http.get(Uri.parse(downloadUrl));
+
+        if (response.statusCode == 200) {
+          final bytes = response.bodyBytes;
+
+          // Get downloads directory
+          final directory = await getDownloadsDirectory();
+          if (directory != null) {
+            final safeTitle = _titleController.text
+                .replaceAll(RegExp(r'[^\w\s-]'), '')
+                .replaceAll(RegExp(r'\s+'), '_');
+            final fileName =
+                '${safeTitle}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+            final filePath = '${directory.path}/$fileName';
+
+            // Save file
+            final file = File(filePath);
+            await file.writeAsBytes(bytes);
+
+            // Open the file
+            await OpenFilex.open(filePath);
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Book saved to: $filePath'),
+                backgroundColor: Colors.green,
               ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
+            );
+          } else {
+            throw Exception('Could not access downloads directory');
+          }
+        } else {
+          throw Exception('Failed to download file');
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error downloading book: ${e.toString()}'),
+          backgroundColor: Colors.red,
         ),
       );
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error downloading book: $e')));
+    } finally {
+      setState(() {
+        _isDownloading = false;
+      });
     }
   }
 
@@ -264,30 +344,36 @@ class _BookGenerationState extends State<BookGeneration>
       return;
     }
 
+    setState(() {
+      _isDownloading = true;
+    });
+
     try {
-      //For preview, download the PDF and show it
-      final downloadUrl =
+      // Create preview URL
+      final previewUrl =
           '${widget.backendUrl}/api/download-book/$_generatedBookId';
 
+      // For preview, we'll open in browser/webview
+      await launchUrl(
+        Uri.parse(previewUrl),
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Opening book preview...'),
-          action: SnackBarAction(
-            label: 'Download',
-            onPressed: () => _downloadBook(),
-          ),
+          content: Text('Error previewing book: ${e.toString()}'),
+          backgroundColor: Colors.red,
         ),
       );
-      // In web: will download directly
-      // In mobile: might need special handling
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error previewing book: $e')));
+    } finally {
+      setState(() {
+        _isDownloading = false;
+      });
     }
   }
 
   void _resetForm() {
+    // Clear all form data and state
     setState(() {
       _titleController.clear();
       _descriptionController.clear();
@@ -301,7 +387,21 @@ class _BookGenerationState extends State<BookGeneration>
       _generatedFilename = null;
       _topicsList.clear();
       _showDownloadButton = false;
+      _isDownloading = false;
+      _currentStep = '';
     });
+
+    // Clear any snackbars
+    ScaffoldMessenger.of(context).clearSnackBars();
+
+    // Show a confirmation message
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Form cleared. Ready to create a new book!'),
+        backgroundColor: Colors.blue,
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
@@ -313,12 +413,20 @@ class _BookGenerationState extends State<BookGeneration>
         title: const Text('Kiddo Book AI'),
         backgroundColor: Colors.orange.shade700,
         actions: [
+          // Small backend status indicator button (just like theme button)
+          IconButton(
+            onPressed: _checkBackendStatus,
+            icon: _buildBackendStatusIcon(),
+            tooltip: _getBackendStatusTooltip(),
+            color: Colors.white,
+          ),
           IconButton(
             onPressed: widget.onToggleTheme,
             icon: Icon(
               isDark ? Icons.light_mode : Icons.dark_mode,
               color: Colors.white,
             ),
+            tooltip: 'Toggle theme',
           ),
         ],
       ),
@@ -348,7 +456,7 @@ class _BookGenerationState extends State<BookGeneration>
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Download your generated book or create a new one:',
+                    'Preview or download your generated book:',
                     style: TextStyle(
                       color: isDark
                           ? Colors.grey.shade400
@@ -360,7 +468,7 @@ class _BookGenerationState extends State<BookGeneration>
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       ElevatedButton.icon(
-                        onPressed: _previewBook,
+                        onPressed: _isDownloading ? null : _previewBook,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue.shade700,
                           foregroundColor: Colors.white,
@@ -370,10 +478,19 @@ class _BookGenerationState extends State<BookGeneration>
                           ),
                         ),
                         icon: const Icon(Icons.preview),
-                        label: const Text('Preview'),
+                        label: _isDownloading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text('Preview'),
                       ),
                       ElevatedButton.icon(
-                        onPressed: _downloadBook,
+                        onPressed: _isDownloading ? null : _downloadBook,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green.shade700,
                           foregroundColor: Colors.white,
@@ -383,10 +500,19 @@ class _BookGenerationState extends State<BookGeneration>
                           ),
                         ),
                         icon: const Icon(Icons.download),
-                        label: const Text('Download'),
+                        label: _isDownloading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text('Download'),
                       ),
                       ElevatedButton.icon(
-                        onPressed: _resetForm,
+                        onPressed: _isDownloading ? null : _resetForm,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isDark
                               ? Colors.grey.shade700
@@ -411,6 +537,29 @@ class _BookGenerationState extends State<BookGeneration>
     );
   }
 
+  // Small backend status icon for the button
+  Widget _buildBackendStatusIcon() {
+    switch (_backendStatus) {
+      case BackendStatus.healthy:
+        return const Icon(Icons.check_circle, color: Colors.green);
+      case BackendStatus.unhealthy:
+        return const Icon(Icons.error, color: Colors.red);
+      case BackendStatus.unknown:
+        return const Icon(Icons.question_mark, color: Colors.orange);
+    }
+  }
+
+  String _getBackendStatusTooltip() {
+    switch (_backendStatus) {
+      case BackendStatus.healthy:
+        return 'Backend is connected';
+      case BackendStatus.unhealthy:
+        return 'Backend is offline - Click to retry';
+      case BackendStatus.unknown:
+        return 'Checking backend status';
+    }
+  }
+
   Widget _buildInputScreen() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -418,6 +567,7 @@ class _BookGenerationState extends State<BookGeneration>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Book Title
           TextField(
             controller: _titleController,
             style: TextStyle(color: isDark ? Colors.white : Colors.black),
@@ -444,6 +594,8 @@ class _BookGenerationState extends State<BookGeneration>
             ),
           ),
           const SizedBox(height: 20),
+
+          // Book Description
           TextField(
             controller: _descriptionController,
             style: TextStyle(color: isDark ? Colors.white : Colors.black),
@@ -471,6 +623,8 @@ class _BookGenerationState extends State<BookGeneration>
             ),
           ),
           const SizedBox(height: 20),
+
+          // Field of Study Dropdown
           DropdownButtonFormField<String>(
             value: _selectedField,
             style: TextStyle(color: isDark ? Colors.white : Colors.black),
@@ -521,6 +675,8 @@ class _BookGenerationState extends State<BookGeneration>
             },
           ),
           const SizedBox(height: 20),
+
+          // Book Type Dropdown
           DropdownButtonFormField<String>(
             value: _selectedBookType,
             style: TextStyle(color: isDark ? Colors.white : Colors.black),
@@ -571,6 +727,8 @@ class _BookGenerationState extends State<BookGeneration>
             },
           ),
           const SizedBox(height: 20),
+
+          // Topics Input
           TextField(
             controller: _topicsController,
             style: TextStyle(color: isDark ? Colors.white : Colors.black),
@@ -607,16 +765,45 @@ class _BookGenerationState extends State<BookGeneration>
             ),
           ),
           const SizedBox(height: 30),
-          ElevatedButton.icon(
-            onPressed: _generateBook,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange.shade700,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 40),
+
+          // Generate Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed:
+                  (_isGenerating || _backendStatus == BackendStatus.unhealthy)
+                  ? null
+                  : _generateBook,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _backendStatus == BackendStatus.unhealthy
+                    ? Colors.grey
+                    : Colors.orange.shade700,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              icon: const Icon(Icons.auto_stories),
+              label: _isGenerating
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      _backendStatus == BackendStatus.unhealthy
+                          ? 'Backend Offline'
+                          : 'Generate Book',
+                      style: const TextStyle(fontSize: 16),
+                    ),
             ),
-            icon: const Icon(Icons.auto_stories),
-            label: const Text('Generate Book', style: TextStyle(fontSize: 16)),
           ),
+
+          // Generated Chapters Preview
           if (_generatedChapters.isNotEmpty && !_showDownloadButton) ...[
             const SizedBox(height: 30),
             const Text(
@@ -632,12 +819,19 @@ class _BookGenerationState extends State<BookGeneration>
                     backgroundColor: Colors.orange.shade100,
                     child: Text('${entry.key + 1}'),
                   ),
-                  title: Text(_topicsList[entry.key]),
+                  title: Text(
+                    _topicsList.length > entry.key
+                        ? _topicsList[entry.key]
+                        : 'Chapter ${entry.key + 1}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   subtitle: Text(
-                    entry.value.length > 100
-                        ? '${entry.value.substring(0, 100)}...'
-                        : entry.value,
+                    (entry.value ?? '').isNotEmpty &&
+                            (entry.value ?? '').length > 100
+                        ? '${(entry.value ?? '').substring(0, 100)}...'
+                        : (entry.value ?? 'No content available'),
                     maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
@@ -717,3 +911,5 @@ class _BookGenerationState extends State<BookGeneration>
     );
   }
 }
+
+enum BackendStatus { healthy, unhealthy, unknown }
