@@ -30,7 +30,7 @@ This repository is designed so every ML project follows the same structure, maki
 ## 📂 Repository Structure (High-Level)
 
 ```
-ML2Train/
+ML_To_Train/
 │
 ├── Creditwise_Loan_Approval/
 ├── Employee_Retention/
@@ -81,8 +81,8 @@ Project_Name/
 * No underscores required.
 * Example:
 
-  * smart car customer.csv
-  * employee retention.csv
+  * SmartCartCustomer.csv
+  * EmployeeRetention.csv
 
 ---
 
@@ -164,8 +164,8 @@ Dataset file names follow:
 
 Example:
 
-* smart car customer.csv
-* loan approval.csv
+* SmartCartCustomer.csv
+* LoanApproval.csv
 
 ---
 
@@ -175,8 +175,8 @@ Notebook name matches the project name in readable format.
 
 Example:
 
-* Smart Car Clustering System.ipynb
-* Creditwise Loan Approval.ipynb
+* Smart_Car_Clustering System.ipynb
+* Creditwise_Loan_Approval.ipynb
 
 ---
 
