@@ -170,7 +170,7 @@ The deployment pipeline follows this flow:
 ```mermaid
 flowchart TD
 
-A[app.py] --> B[Preprocessing Pipeline<br/>preprocessing.py]
+A[app.py] --> B[Preprocessing Pipeline / preprocessing.py]
 
 B --> C[Gemini API Layer]
 C --> D[Gemini API Response]
@@ -188,12 +188,13 @@ G1 --> H[Predict using Lasso]
 G2 --> I[Predict using Linear Regression]
 G3 --> J[Predict using Ridge]
 
-H --> K[Average Predictions<br/>def price_predictor()]
+H --> K[Average Predictions - price_predictor]
 I --> K
 J --> K
 
 K --> L[Return Final Price to API]
 L --> A
+
 ```
 
 ---
