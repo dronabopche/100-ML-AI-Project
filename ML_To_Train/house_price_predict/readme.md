@@ -209,10 +209,3 @@ L --> A
 
 This project is intended for educational purposes.  
 You are free to use, modify, and distribute it with proper attribution.
-
-
-✅ This version will render the **Mermaid diagram correctly on GitHub**.  
-✅ All explanatory text outside the diagram block has been cleaned up.  
-✅ Your images (`src/resources/preVisual.png` and `src/resources/3m.png`) will still load if they exist in your repo.  
-
-Would you like me to also **convert your preprocessing visualization** (currently a static PNG) into a Mermaid flowchart so it’s consistent with the deployment diagram?
