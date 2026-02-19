@@ -15,6 +15,8 @@ This repository is designed so every ML project follows the same structure, maki
 
 ## 📌 Projects Included
 
+![Model Evaluation](ML_To_Train/house_price_predict/src/resources/file.png)
+
 1. Creditwise Loan Approval
 2. Employee Retention
 3. Heart Health Risk Predictor
