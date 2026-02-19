@@ -144,7 +144,7 @@ House-Price-Prediction/
     │
     └── preprocessing/
         └── preprocessing.py
-````
+```
 
 ---
 
@@ -152,23 +152,21 @@ House-Price-Prediction/
 
 The deployment pipeline follows this flow:
 
-1. `app.py` receives the input request
-2. It sends the input to the preprocessing pipeline
-3. Preprocessing prepares the input and calls the Gemini API layer
-4. Gemini API returns processed/structured values
-5. The values are converted into a NumPy row format
+1. `app.py` receives the input request  
+2. It sends the input to the preprocessing pipeline  
+3. Preprocessing prepares the input and calls the Gemini API layer  
+4. Gemini API returns processed/structured values  
+5. The values are converted into a NumPy row format  
 6. `predictor.py` loads all three models from the `model/` directory:
-
-   * Lasso model
-   * Linear Regression model
-   * Ridge model
-7. Predictions are generated from all models
-8. The final price is calculated by averaging all three predictions
-9. The final response is returned back through the API
+   * Lasso model  
+   * Linear Regression model  
+   * Ridge model  
+7. Predictions are generated from all models  
+8. The final price is calculated by averaging all three predictions  
+9. The final response is returned back through the API  
 
 ### Deployment Diagram
 
-```mermaid
 flowchart TD
 
 A[app.py] --> B[Preprocessing Pipeline<br/>preprocessing.py]
@@ -207,6 +205,5 @@ L --> A
 
 ## License
 
-This project is intended for educational purposes.
+This project is intended for educational purposes.  
 You are free to use, modify, and distribute it with proper attribution.
-
