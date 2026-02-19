@@ -75,7 +75,7 @@ The preprocessing pipeline includes:
 
 ### Preprocessing Visualization
 
-![EDA and Preprocessing](src/resources/pre-visual.png)
+![EDA and Preprocessing](src/resources/preVisual.png)
 
 ---
 
@@ -114,7 +114,7 @@ The similar scores indicate that regularization had minimal impact for the chose
 
 ### Evaluation Output
 
-![Model Evaluation](src/resources/3M.png)
+![Model Evaluation](src/resources/3m.png)
 
 ---
 
