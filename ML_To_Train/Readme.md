@@ -1,6 +1,6 @@
 # ML_To_Train
 
-<img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExYmtpcmNvZ3J1c3kxOGxvcTQzMXozZmk0bXdoNDJvZjlubmM3enNyeCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/DfgVtJ4Cjq6gu8E8H0/giphy.gif" width="600">
+<img src="ML_To_Train/House_Price_Predict/resources/file.png" width="600">
 
 A structured repository containing multiple Machine Learning projects organized using a consistent and reusable architecture.
 
