@@ -16,8 +16,8 @@ Each project is self-contained and includes the dataset, trained model, preproce
 
 The repository contains multiple Machine Learning projects spanning classification, regression, clustering, and NLP-based prediction systems.
 
-![Repo stars](https://img.shields.io/github/stars/user/repo)
-![Forks](https://img.shields.io/github/forks/user/repo)
+![Repo stars](https://img.shields.io/github.com/dronabopche/100-ML-AI-Project)
+![Forks](https://img.shields.io/github.com/dronabopche/100-ML-AI-Project)
 ## Projects Included
 
 1. Binary Image Classification
