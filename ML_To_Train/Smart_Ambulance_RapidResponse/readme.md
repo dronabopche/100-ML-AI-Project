@@ -1,4 +1,4 @@
-```md
+
 # Gray Mobility – AI/ML Engineer Intern Assignment (Smart Ambulance)
 
 This repository contains my solution for the **Gray Mobility Smart Ambulance AI/ML Engineer Intern Assignment**.  
@@ -200,6 +200,3 @@ models/
 
 **(Drona Bopche)**
 AI/ML Engineer Intern Assignment – Gray Mobility
-
-```
-```
