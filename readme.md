@@ -14,7 +14,7 @@
   <a href="https://linkedin.com/in/dronabopche">
     <img src="https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin" />
   </a>
-  <a href="https://github.com/dronabopche/ML_To_Train">
+  <a href="https://github.com/dronabopche/100-ML-AI-Project/tree/main/ML_To_Train">
     <img src="https://img.shields.io/github/stars/dronabopche/ML_To_Train?style=for-the-badge" />
   </a>
 </p>
