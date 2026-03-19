@@ -5,17 +5,17 @@
 </p>
 
 <p align="center">
-  <a href="https://kaggle.com/YOUR_USERNAME">
+  <a href="https://kaggle.com/dronabopche">
     <img src="https://img.shields.io/badge/Kaggle-Profile-blue?style=for-the-badge&logo=kaggle" />
   </a>
-  <a href="https://huggingface.co/YOUR_USERNAME">
+  <a href="https://huggingface.co/dronabopche">
     <img src="https://img.shields.io/badge/HuggingFace-Models-yellow?style=for-the-badge&logo=huggingface" />
   </a>
-  <a href="https://linkedin.com/in/YOUR_USERNAME">
+  <a href="https://linkedin.com/in/dronabopche">
     <img src="https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin" />
   </a>
-  <a href="https://github.com/YOUR_USERNAME/ML_To_Train">
-    <img src="https://img.shields.io/github/stars/YOUR_USERNAME/ML_To_Train?style=for-the-badge" />
+  <a href="https://github.com/dronabopche/ML_To_Train">
+    <img src="https://img.shields.io/github/stars/dronabopche/ML_To_Train?style=for-the-badge" />
   </a>
 </p>
 
