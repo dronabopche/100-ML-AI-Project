@@ -4,6 +4,21 @@
   <img src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExemN5YWFoN3k2b3MzOXplZ2c3ZWVldGFsMzZicjkyNHZvdDlhNjV4ZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/kpRtSUISq6Dcd9BElE/giphy.gif" width="150">
 </p>
 
+<p align="center">
+  <a href="https://kaggle.com/YOUR_USERNAME">
+    <img src="https://img.shields.io/badge/Kaggle-Profile-blue?style=for-the-badge&logo=kaggle" />
+  </a>
+  <a href="https://huggingface.co/YOUR_USERNAME">
+    <img src="https://img.shields.io/badge/HuggingFace-Models-yellow?style=for-the-badge&logo=huggingface" />
+  </a>
+  <a href="https://linkedin.com/in/YOUR_USERNAME">
+    <img src="https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin" />
+  </a>
+  <a href="https://github.com/YOUR_USERNAME/ML_To_Train">
+    <img src="https://img.shields.io/github/stars/YOUR_USERNAME/ML_To_Train?style=for-the-badge" />
+  </a>
+</p>
+
 ## Overview
 
 ML_To_Train is a backend-oriented Machine Learning repository designed for reproducibility and structured learning. The repository contains multiple machine learning implementations along with their associated datasets, trained models, preprocessing logic, and experimentation notebooks.
