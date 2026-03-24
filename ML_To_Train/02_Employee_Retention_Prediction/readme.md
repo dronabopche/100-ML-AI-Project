@@ -1,5 +1,7 @@
 # 👥 Employee Turnover Prediction Analysis
 
+<img src="02_Employee_Retention_Prediction/resources/02_emp.png" width="600">
+
 ## 📌 Project Overview
 
 This project focuses on predicting **employee turnover** using a structured dataset sourced from **Kaggle**.  
@@ -162,36 +164,6 @@ Employee-Turnover-Prediction/
 ├── Employee_Turnover_Analysis.ipynb
 ├── README.md
 ````
-
----
-
-## 🚀 How to Run the Project
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/your-username/employee-turnover-prediction.git
-   ```
-
-2. Navigate to the project directory:
-
-   ```bash
-   cd employee-turnover-prediction
-   ```
-
-3. Launch Jupyter Notebook:
-
-   ```bash
-   jupyter notebook
-   ```
-
-4. Open and run:
-
-   ```text
-   Employee_Turnover_Analysis.ipynb
-   ```
-
----
 
 ## 📌 Future Improvements
 

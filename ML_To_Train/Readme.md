@@ -48,6 +48,8 @@ The repository contains multiple Machine Learning projects spanning classificati
 
 ---
 
+<img src="01_House_Price_Predict/resources/00_intro.png" width="600">
+
 # Repository Structure
 
 ```
