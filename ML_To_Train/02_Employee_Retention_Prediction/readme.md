@@ -1,6 +1,6 @@
 # 👥 Employee Turnover Prediction Analysis
 
-<img src="02_Employee_Retention_Prediction/resources/02_emp.png" width="600">
+<img src="resources/02_emp.png" width="600">
 
 ## 📌 Project Overview
 
