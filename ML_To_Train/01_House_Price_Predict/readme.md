@@ -5,6 +5,8 @@
 This project focuses on **house price prediction** using a publicly available **Kaggle housing dataset**.  
 The primary objective is to understand the **end-to-end machine learning workflow**, starting from data preprocessing and exploratory data analysis (EDA) to model training, evaluation, and comparison.
 
+<img src="/resources/01_house.png" width="600">
+
 The project emphasizes **learning core machine learning concepts** rather than achieving maximum predictive performance.
 
 <img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWJ2endvY292MTQxMHdscDlieTlrcjR3NnVobHEyZzEwcHlnZ29xayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/nhW9Oxyu2FeAkqZyc7/giphy.gif" width="600">
