@@ -17,6 +17,9 @@
   <a href="https://github.com/dronabopche/100-ML-AI-Project">
     <img src="https://img.shields.io/github/stars/dronabopche/100-ML-AI-Project?style=for-the-badge" />
   </a>
+   <a href="https://www.youtube.com/@cherry_rxch">
+    <img src="https://img.shields.io/badge/YouTubeTutorials?style=for-the-badge&logo=linkedin" />
+  </a>
 </p>
 
 ## Overview
