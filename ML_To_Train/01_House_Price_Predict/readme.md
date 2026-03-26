@@ -9,9 +9,6 @@ The primary objective is to understand the **end-to-end machine learning workflo
 
 The project emphasizes **learning core machine learning concepts** rather than achieving maximum predictive performance.
 
-<img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWJ2endvY292MTQxMHdscDlieTlrcjR3NnVobHEyZzEwcHlnZ29xayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/nhW9Oxyu2FeAkqZyc7/giphy.gif" width="600">
----
-
 ## Objectives
 
 - Understand the structure and characteristics of real-world housing data  
@@ -206,12 +203,4 @@ L --> A
 
 **Drona Bopche** | Engineering Student | Machine Learning Enthusiast
 
----
-
-## License
-
-This project is intended for educational purposes.  
-You are free to use, modify, and distribute it with proper attribution.
-
-
-<img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExcm0wYXZraDBleGJza25pYXhyejY2Y2xucmIyb2ZqNTB6dWljMnV1ZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/s9ZEmTVxjJvpKG1mip/giphy.gif" width="600">
+<img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWJ2endvY292MTQxMHdscDlieTlrcjR3NnVobHEyZzEwcHlnZ29xayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/nhW9Oxyu2FeAkqZyc7/giphy.gif" width="600">
