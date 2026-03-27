@@ -37,7 +37,7 @@ The repository is also used as a backend resource layer for two web platforms th
 | Platform                                                                   | Purpose                                                    |
 | -------------------------------------------------------------------------- | ---------------------------------------------------------- |
 | [https://promptvistaml.vercel.app](https://promptvistaml.vercel.app)       | Machine learning learning platform and project exploration |
-| [https://datascience.show.visual.app](https://datascience.show.visual.app) | Data science resource portal and project reference         |
+| [https://datascienceshow.vercel.app](https://datascienceshow.vercel.app)   | Data science resource portal and project reference         |
 
 Both platforms reference the structured machine learning implementations maintained in this repository.
 

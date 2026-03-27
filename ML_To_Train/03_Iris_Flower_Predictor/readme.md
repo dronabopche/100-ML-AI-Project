@@ -122,7 +122,7 @@ flowchart TD
     C --> D[Train-Test Split]
     D --> E[Train Models]
     E --> F[Evaluate Models]
-    F --> G[Select Best Model (KNN)]
+    F --> G[Select Best Model KNN]
 ```
 
 ---
