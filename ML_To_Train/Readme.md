@@ -1,5 +1,3 @@
-<img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDBueXFwdXMwOGxzdm9lNmdyaGZ1dzVubW9veGQyMmIzYmxkc3ZqbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Gk6UbJXyHxPtiHiLZZ/giphy.gif" width="600">
-
 # ML_To_Train
 
 A large-scale repository containing 100+ Machine Learning, Deep Learning, NLP, and Reinforcement Learning projects, built using a standardized and reusable architecture.
@@ -55,6 +53,18 @@ Project_Name/
 └── README.md
 ```
 
+| Directory / File    | Description                                 | Contents                                                                        |
+| ------------------- | ------------------------------------------- | ------------------------------------------------------------------------------- |
+| **Dataset/**        | Stores raw data for training and evaluation | CSV files, image datasets, structured tabular data                              |
+| **Models/**         | Contains trained and serialized models      | `.pkl`, `.joblib`, `.h5`, saved pipelines                                       |
+| **Resources/**      | Supporting assets for the project           | Diagrams, visualization images, documentation files                             |
+| **SRC/**            | Core application logic                      | Complete ML pipeline implementation                                             |
+| **SRC/App.py**      | Entry point of the application              | Handles input, preprocessing, model loading, inference, and prediction output   |
+| **SRC/Processing/** | Data preprocessing module                   | Missing value handling, encoding, feature engineering, scaling, transformations |
+| **SRC/Output/**     | Output handling module                      | Prediction results, probability scores, confidence levels, timestamps           |
+
+---
+
 ## Machine Learning Pipeline
 
 ```mermaid
@@ -66,22 +76,6 @@ D --> E[Evaluation]
 E --> F[Deployment API]
 F --> G[Prediction Output]
 ```
-
----
-
-## Project Structure
-
-| Directory / File    | Description                                 | Contents                                                                        |
-| ------------------- | ------------------------------------------- | ------------------------------------------------------------------------------- |
-| **Dataset/**        | Stores raw data for training and evaluation | CSV files, image datasets, structured tabular data                              |
-| **Models/**         | Contains trained and serialized models      | `.pkl`, `.joblib`, `.h5`, saved pipelines                                       |
-| **Resources/**      | Supporting assets for the project           | Diagrams, visualization images, documentation files                             |
-| **SRC/**            | Core application logic                      | Complete ML pipeline implementation                                             |
-| **SRC/App.py**      | Entry point of the application              | Handles input, preprocessing, model loading, inference, and prediction output   |
-| **SRC/Processing/** | Data preprocessing module                   | Missing value handling, encoding, feature engineering, scaling, transformations |
-| **SRC/Output/**     | Output handling module                      | Prediction results, probability scores, confidence levels, timestamps           |
-
-
 ---
 
 ## API Flow
