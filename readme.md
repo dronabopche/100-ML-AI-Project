@@ -1,7 +1,7 @@
 # ML_To_Train
 
 <p align="center">
-  <img src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExemN5YWFoN3k2b3MzOXplZ2c3ZWVldGFsMzZicjkyNHZvdDlhNjV4ZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/kpRtSUISq6Dcd9BElE/giphy.gif" width="150">
+  <img src="ML_To_Train/01_House_Price_Predict/resources/100-AI:ML-Book.PNG">
 </p>
 
 <p align="center">
