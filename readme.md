@@ -1,4 +1,4 @@
-# ML_To_Train
+# 100-ML-AI-Project
 
 <p align="center">
   <img src="ML_To_Train/01_House_Price_Predict/resources/100-AI:ML-Book.PNG">
@@ -24,7 +24,7 @@
 
 ## Overview
 
-ML_To_Train is a backend-oriented Machine Learning repository designed for reproducibility and structured learning. The repository contains multiple machine learning implementations along with their associated datasets, trained models, preprocessing logic, and experimentation notebooks.
+100-ML-AI-Project is a backend-oriented Machine Learning repository designed for reproducibility and structured learning. The repository contains multiple machine learning implementations along with their associated datasets, trained models, preprocessing logic, and experimentation notebooks.
 
 Each project includes an IPython Notebook used for experimentation and model development, making the repository useful both as a learning resource and as a reproducible backend reference for machine learning workflows.
 
